@@ -1,5 +1,5 @@
 ---
-name: Bug Report
+name: Bug Issue
 about: Báo cáo lỗi
 title: "[BUG] "
 labels: bug
