@@ -8,28 +8,54 @@ assignees: ""
 
 ## Mô tả công việc
 
-<!-- Mô tả chi tiết về công việc cần làm -->
+<!-- Mô tả chi tiết về công việc kỹ thuật cần làm -->
 
-## Module liên quan
+## Feature Issue
 
-<!-- Chọn một hoặc nhiều: Authentication / Document Management -->
+<!-- Link tới Feature Issue - Ví dụ: #1 (Feature - Đăng ký tài khoản) -->
 
-## Chứng chỉ hoàn thành (Definition of Done)
+## Chi tiết kỹ thuật
 
-- [ ] Code viết xong
-- [ ] Unit test viết xong
-- [ ] Code review hoàn tất
-- [ ] Documentation cập nhật
-- [ ] Testing trên dev environment passed
+<!-- Mô tả chi tiết implementation cần làm (các bước cụ thể, tools, patterns, v.v) -->
 
-## Ghi chú kỹ thuật
+### Core / Business logic
 
-<!-- Các lưu ý về implementation, pattern sử dụng, dependencies, v.v -->
+<!-- Liệt kê các implementation liên quan đến Core hoặc Business logic nếu có -->
 
-## Ước tính độ phức tạp
+- [ ]
 
-<!-- Story point: 1, 2, 3, 5, 8, 13 -->
+### UI / WPF Appication
 
-## Liên quan đến issue
+<!-- Liệt kê các implementation liên quan đến WPF Application UI nếu có -->
 
-<!-- Nếu liên quan đến issue khác, dán link: #123 -->
+- [ ]
+
+### Database / EF Core
+
+<!-- Liệt kê các implementation liên quan đến Database - EF Core nếu có -->
+
+- [ ]
+
+## Chứng chỉ hoàn thành
+
+<!-- Các gợi ý nên thực hiện -->
+
+### Thực hiện code
+
+- [ ] Code viết xong (commit với message rõ ràng)
+- [ ] Code follow project conventions
+- [ ] No hardcoded values (use constants/config)
+- [ ] Error handling implemented (try-catch, logging)
+- [ ] No code duplication (DRY principle)
+
+### Testing
+
+- [ ] Unit tests viết xong (coverage >= 80%)
+- [ ] All tests passing locally
+- [ ] Edge cases covered
+- [ ] Integration tests (nếu cần)
+
+### Documentation
+
+- [ ] Inline code comments (complex logic)
+- [ ] README updated (nếu cần)
