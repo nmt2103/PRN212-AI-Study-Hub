@@ -1,4 +1,4 @@
-# Document Management System
+# AI Study Hub
 
 Một ứng dụng quản lý tài liệu học tập toàn diện, giúp sinh viên và giáo viên tổ chức, chia sẻ, và quản lý tài liệu học một cách hiệu quả.
 
@@ -6,7 +6,7 @@ Một ứng dụng quản lý tài liệu học tập toàn diện, giúp sinh v
 
 - [Giới thiệu](#-giới-thiệu)
 - [Các tính năng nổi bật](#-các-tính-năng-nổi-bật)
-- [Tech Stack](#-tech-stack)
+- [Tech Stack](#core)
 - [Cài đặt](#-cài-đặt)
 - [Cấu trúc dự án](#-cấu-trúc-dự-án)
 
@@ -14,7 +14,7 @@ Một ứng dụng quản lý tài liệu học tập toàn diện, giúp sinh v
 
 ## 🎯 Giới thiệu
 
-**Document Management System** là một ứng dụng desktop được xây dựng để giúp sinh viên, giáo viên, và các cá nhân quản lý tài liệu học tập một cách có hệ thống.
+**AI Study Hub** là một ứng dụng desktop được xây dựng để giúp sinh viên, giáo viên, và các cá nhân quản lý tài liệu học tập một cách có hệ thống.
 
 ### Tại sao cần ứng dụng này?
 
@@ -152,12 +152,6 @@ AIStudyHub/
 │   ├── AIStudyHub.Core.Tests/
 │   ├── AIStudyHub.Data.Tests/
 │   └── AIStudyHub.UI.Tests/
-│
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── DATABASE.md
-│   ├── SETUP.md
-│   └── TROUBLESHOOTING.md
 │
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
