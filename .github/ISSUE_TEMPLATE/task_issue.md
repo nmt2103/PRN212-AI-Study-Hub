@@ -1,5 +1,5 @@
 ---
-name: Task
+name: Task Issue
 about: Công việc phát triển / cải thiện
 title: "[TASK] "
 labels: task

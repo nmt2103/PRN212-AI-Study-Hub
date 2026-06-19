@@ -1,5 +1,5 @@
 ---
-name: Feature Request
+name: Feature Issue
 about: Yêu cầu tính năng mới
 title: "[FEATURE] "
 labels: enhancement
