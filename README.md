@@ -116,7 +116,7 @@ dotnet restore
 ### 4. Tạo database & apply migrations
 
 ```bash
-dotnet ef dbcontext scaffold "Server=<YOUR_SQL_SERVER>;uid=<YOUR_USER>;pwd=<YOUR_PASSWORD;database=StudyHubDB;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer --output-dir ./Entities
+dotnet ef dbcontext scaffold "Server=<YOUR_SQL_SERVER>;uid=<YOUR_USER>;pwd=<YOUR_PASSWORD>;database=StudyHubDB;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer --output-dir ./Entities
 ```
 
 ### 5. Build ứng dụng
@@ -140,26 +140,36 @@ dotnet test
 ## 📁 Cấu trúc dự án
 
 ```
-AIStudyHub/
+Prn212.AIStudyHub/
 │
-├── src/
-│   ├── AIStudyHub.Core/       # Business logic, models, services
-│   ├── AIStudyHub.Data/       # Database, EF Core, migrations
-│   ├── AIStudyHub.UI/         # WPF views, viewmodels, styles
-│   └── AIStudyHub/            # Entry point, configuration
+│── Prn212.AIStudyHub.WPF/              # Main WPF project
+│   ├── Entities/                     # Data classes (User, Document, etc)
+│   ├── ViewModels/                 # MVVM ViewModels
+│   ├── Views/                      # XAML windows/user controls
+│   ├── Services/                   # Business logic (AuthService, DocumentService)
+│   ├── Repositories/               # Database access (UserRepository, DocumentRepository)
+│   ├── Resources/                  # Styles, converters, icons
+│   │   ├── Styles.xaml
+│   │   └── Converters/
+│   ├── App.xaml
+│   ├── App.xaml.cs
+│   ├── MainWindow.xaml
+│   ├── MainWindow.xaml.cs
+│   ├── appsettings.json            # Database connection
+│   └── Prn212.AIStudyHub.WPF.csproj
 │
-├── tests/
-│   ├── AIStudyHub.Core.Tests/
-│   ├── AIStudyHub.Data.Tests/
-│   └── AIStudyHub.UI.Tests/
+├── docs/
+│   ├── DATABASE.md                     # Database schema & setup
+│   └── SETUP.md                        # Installation guide
 │
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   └── workflows/
+├── .github/ISSUE_TEMPLATE/
+│   ├── feature_issue.md
+│   ├── bug_issue.md
+│   └── task_issue.md
 │
-├── .gitignore
-├── .gitattributes
 ├── README.md
 ├── CONTRIBUTING.md
-└── AIStudyHub.slnx
+├── .gitattribute
+├── .gitignore
+└── Prn212.AIStudyHub.slnx
 ```
