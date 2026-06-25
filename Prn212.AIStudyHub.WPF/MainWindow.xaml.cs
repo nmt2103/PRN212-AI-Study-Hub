@@ -1,13 +1,4 @@
-﻿using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Prn212.AIStudyHub.WPF
 {
@@ -19,6 +10,13 @@ namespace Prn212.AIStudyHub.WPF
     public MainWindow()
     {
       InitializeComponent();
+    }
+
+    private void BtnOpenUpload_Click(object sender, RoutedEventArgs e)
+    {
+      var uploadWindow = new Views.UploadDocumentWindow();
+      uploadWindow.Owner = this;
+      uploadWindow.ShowDialog();
     }
   }
 }

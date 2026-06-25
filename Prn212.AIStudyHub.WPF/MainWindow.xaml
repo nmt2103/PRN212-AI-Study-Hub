@@ -1,12 +1,31 @@
-﻿<Window x:Class="Prn212.AIStudyHub.WPF.MainWindow"
+<Window x:Class="Prn212.AIStudyHub.WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
+        Title="AI Study Hub - Trang Chủ" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
+    <Grid Background="#F3F4F6">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Chào Mừng Bạn Đến Với AI Study Hub" 
+                       FontSize="24" FontWeight="Bold" Foreground="#1E3A8A"
+                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            <TextBlock Text="Nơi quản lý tài liệu học tập thông minh và dễ dàng." 
+                       FontSize="14" Foreground="#4B5563"
+                       HorizontalAlignment="Center" Margin="0,0,0,30"/>
+            
+            <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu Mới" 
+                    Width="200" Height="45" FontSize="15" FontWeight="SemiBold"
+                    Background="#3B82F6" Foreground="White" BorderThickness="0"
+                    Cursor="Hand" Click="BtnOpenUpload_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>
