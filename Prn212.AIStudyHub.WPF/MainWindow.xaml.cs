@@ -1,4 +1,5 @@
 using System.Windows;
+using Prn212.AIStudyHub.WPF.Views;
 
 namespace Prn212.AIStudyHub.WPF
 {
@@ -14,7 +15,7 @@ namespace Prn212.AIStudyHub.WPF
 
     private void BtnOpenUpload_Click(object sender, RoutedEventArgs e)
     {
-      var uploadWindow = new Views.UploadDocumentWindow();
+      var uploadWindow = new UploadDocumentWindow();
       uploadWindow.Owner = this;
       uploadWindow.ShowDialog();
     }

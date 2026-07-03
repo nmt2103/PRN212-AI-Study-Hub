@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Prn212.AIStudyHub.DataAccess/Prn212.AIStudyHub.DataAccess.csproj" />
+  <Project Path="Prn212.AIStudyHub.Services/Prn212.AIStudyHub.Services.csproj" />
   <Project Path="Prn212.AIStudyHub.WPF/Prn212.AIStudyHub.WPF.csproj" />
 </Solution>
