@@ -1,4 +1,6 @@
 using System.Windows;
+using Prn212.AIStudyHub.DataAccess;
+using Prn212.AIStudyHub.Services.Auth;
 
 namespace Prn212.AIStudyHub.WPF
 {
@@ -7,10 +9,8 @@ namespace Prn212.AIStudyHub.WPF
   /// </summary>
   public partial class App : Application
   {
-    /// <summary>
-    /// Lưu trữ thông tin người dùng đang đăng nhập vào hệ thống
-    /// </summary>
-    public static Entities.AppUser? CurrentUser { get; set; }
+    /// <summary>Tài khoản đang đăng nhập (session).</summary>
+    public static AppUser? CurrentUser { get; set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -18,19 +18,13 @@ namespace Prn212.AIStudyHub.WPF
 
       try
       {
-        using (var context = new Entities.AistudyHubDbContext())
-        {
-          // Giả lập tài khoản đang đăng nhập là ThuanNM (hoặc lấy tài khoản đầu tiên nếu không tìm thấy)
-          CurrentUser = context.AppUsers.FirstOrDefault(u => u.Email == "thuannm@aistudyhub.com")
-                        ?? context.AppUsers.FirstOrDefault();
-        }
+        // Giả lập đăng nhập bằng 1 tài khoản mẫu (sau này nhóm AUTH thay bằng màn hình login)
+        CurrentUser = new AuthService().GetDefaultUser();
       }
       catch (Exception ex)
       {
-        // Ghi nhận lỗi kết nối DB nhưng không crash app ngay
         System.Diagnostics.Debug.WriteLine($"Lỗi khởi tạo session giả lập: {ex.Message}");
       }
     }
   }
-
 }
