@@ -1,5 +1,5 @@
-using System.Windows;
 using Prn212.AIStudyHub.WPF.Views;
+using System.Windows;
 
 namespace Prn212.AIStudyHub.WPF
 {

@@ -12,8 +12,10 @@ public partial class DocumentService
   public (List<Document> Items, int TotalCount) GetPaged(
       int page, int pageSize, string? keyword = null, int? subjectId = null, string? sortBy = null)
   {
-    if (page < 1) page = 1;
-    if (pageSize < 1) pageSize = 10;
+    if (page < 1)
+      page = 1;
+    if (pageSize < 1)
+      pageSize = 10;
 
     using var context = new AistudyHubDbContext();
     IQueryable<Document> query = context.Documents

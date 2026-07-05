@@ -4,6 +4,12 @@
              xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Resources/Styles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Resources/MainWindow.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Resources/UploadDocumentWindow.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
