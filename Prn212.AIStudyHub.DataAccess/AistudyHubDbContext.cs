@@ -18,17 +18,24 @@ public partial class AistudyHubDbContext : DbContext
   public virtual DbSet<Document> Documents { get; set; }
   public virtual DbSet<Subject> Subjects { get; set; }
 
-  private string GetConnectionString()
+  private static readonly Lazy<string> _connectionString = new(() =>
   {
     IConfiguration config = new ConfigurationBuilder()
         .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json", false, true)
+        .AddJsonFile("appsettings.json", false, false)
         .Build();
+
     var strConn = config["ConnectionStrings:DefaultConnection"];
-#pragma warning disable CS8603
+
+    if (string.IsNullOrWhiteSpace(strConn))
+    {
+      throw new InvalidOperationException("Missing required configuration value 'ConnectionStrings:DefaultConnection' in appsettings.json.");
+    }
+
     return strConn;
-#pragma warning restore CS8603
-  }
+  });
+
+  private string GetConnectionString() => _connectionString.Value;
 
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
   {
