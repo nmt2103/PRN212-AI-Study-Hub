@@ -65,6 +65,40 @@ public partial class DocumentService
     }
   }
 
+  public async Task DownloadAsync(int documentId, string destinationFilePath, IProgress<double>? progress = null)
+  {
+    using var context = new AistudyHubDbContext();
+    var doc = await context.Documents.FindAsync(documentId);
+    if (doc == null)
+      throw new Exception("Tài liệu không tồn tại trên hệ thống");
+
+    string sourcePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+    if (!File.Exists(sourcePath))
+      throw new FileNotFoundException("Không tìm thấy file gốc trên server");
+
+    const int bufferSize = 81920;
+    byte[] buffer = new byte[bufferSize];
+
+    using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
+    using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
+
+    long totalBytes = sourceStream.Length;
+    long bytesRead = 0;
+    int read;
+
+    while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+    {
+      await destStream.WriteAsync(buffer, 0, read);
+      bytesRead += read;
+
+      if (progress != null && totalBytes > 0)
+      {
+        double percent = (double) bytesRead / totalBytes * 100;
+        progress.Report(percent);
+      }
+    }
+  }
+
   public async Task UpdateMetadataAsync(int documentId, string title, int subjectId)
   {
     // TODO (DOC 1): lấy document theo id, cập nhật Title/SubjectId, SaveChanges.
