@@ -7,25 +7,26 @@
         mc:Ignorable="d"
         Title="AI Study Hub - Trang Chủ" Height="450" Width="800"
         WindowStartupLocation="CenterScreen">
-    <Grid Background="#F3F4F6">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+          
             <TextBlock Text="Chào Mừng Bạn Đến Với AI Study Hub" 
-                       FontSize="24" FontWeight="Bold" Foreground="#1E3A8A"
+                       Style="{StaticResource HeaderTextBlockStyle}"
                        HorizontalAlignment="Center" Margin="0,0,0,10"/>
+          
             <TextBlock Text="Nơi quản lý tài liệu học tập thông minh và dễ dàng." 
-                       FontSize="14" Foreground="#4B5563"
-                       HorizontalAlignment="Center" Margin="0,0,0,30"/>
+                       Style="{StaticResource DescriptionTextBlockStyle}"
+                       Margin="0,0,0,30"/>
             
             <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu Mới" 
-                    Width="200" Height="45" FontSize="15" FontWeight="SemiBold"
-                    Background="#3B82F6" Foreground="White" BorderThickness="0"
-                    Cursor="Hand" Click="BtnOpenUpload_Click">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="200" Height="45" Margin="0,0,0,10"
+                    Click="BtnOpenUpload_Click"/>
+            
+            <Button x:Name="btnOpenDownload" Content="Tải Xuống Tài Liệu" 
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="200" Height="45"
+                    Click="BtnOpenDownload_Click"/>
         </StackPanel>
     </Grid>
 </Window>

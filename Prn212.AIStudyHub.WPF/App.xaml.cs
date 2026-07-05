@@ -1,6 +1,6 @@
-using System.Windows;
 using Prn212.AIStudyHub.DataAccess;
 using Prn212.AIStudyHub.Services.Auth;
+using System.Windows;
 
 namespace Prn212.AIStudyHub.WPF
 {

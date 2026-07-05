@@ -1,5 +1,5 @@
-using System.Windows;
 using Prn212.AIStudyHub.WPF.Views;
+using System.Windows;
 
 namespace Prn212.AIStudyHub.WPF
 {
@@ -18,6 +18,13 @@ namespace Prn212.AIStudyHub.WPF
       var uploadWindow = new UploadDocumentWindow();
       uploadWindow.Owner = this;
       uploadWindow.ShowDialog();
+    }
+
+    private void BtnOpenDownload_Click(object sender, RoutedEventArgs e)
+    {
+      var downloadWindow = new Views.Documents.DownloadDocumentWindow();
+      downloadWindow.Owner = this;
+      downloadWindow.ShowDialog();
     }
   }
 }
