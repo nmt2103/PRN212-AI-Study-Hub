@@ -50,10 +50,19 @@ public partial class DocumentService
       UploadedAt = DateTime.UtcNow
     };
 
-    using var context = new AistudyHubDbContext();
-    context.Documents.Add(document);
-    await context.SaveChangesAsync();
-    return document;
+    try
+    {
+      using var context = new AistudyHubDbContext();
+      context.Documents.Add(document);
+      await context.SaveChangesAsync();
+      return document;
+    }
+    catch
+    {
+      if (File.Exists(destinationPath))
+        File.Delete(destinationPath);
+      throw;
+    }
   }
 
   public async Task UpdateMetadataAsync(int documentId, string title, int subjectId)
