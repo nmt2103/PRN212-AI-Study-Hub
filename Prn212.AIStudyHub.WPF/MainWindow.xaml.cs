@@ -26,5 +26,12 @@ namespace Prn212.AIStudyHub.WPF
       downloadWindow.Owner = this;
       downloadWindow.ShowDialog();
     }
+
+    private void BtnOpenDelete_Click(object sender, RoutedEventArgs e)
+    {
+      var deleteWindow = new Views.Documents.DeleteDocumentWindow();
+      deleteWindow.Owner = this;
+      deleteWindow.ShowDialog();
+    }
   }
 }

@@ -108,9 +108,35 @@ public partial class DocumentService
 
   public async Task DeleteAsync(int documentId)
   {
-    // TODO (DOC 1): lấy document, xóa file vật lý + xóa bản ghi, SaveChanges.
-    await Task.CompletedTask;
-    throw new NotImplementedException("Cài đặt Delete tại đây.");
+    using var context = new AistudyHubDbContext();
+    using var transaction = await context.Database.BeginTransactionAsync();
+
+    try
+    {
+      var doc = await context.Documents.FindAsync(documentId);
+      if (doc == null)
+        throw new KeyNotFoundException("Không tìm thấy tài liệu cần xóa trên hệ thống.");
+
+      string fullPath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+
+      // Xóa trong database trước
+      context.Documents.Remove(doc);
+      await context.SaveChangesAsync();
+
+      // Xóa file vật lý
+      if (File.Exists(fullPath))
+      {
+        File.Delete(fullPath);
+      }
+
+      // Commit transaction
+      await transaction.CommitAsync();
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync();
+      throw;
+    }
   }
 
   private static string GetContentType(string extension) => extension.ToLowerInvariant() switch
