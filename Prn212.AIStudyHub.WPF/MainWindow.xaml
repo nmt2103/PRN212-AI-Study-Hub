@@ -18,10 +18,15 @@
                        Style="{StaticResource DescriptionTextBlockStyle}"
                        Margin="0,0,0,30"/>
             
-            <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu" 
+            <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu Mới" 
                     Style="{StaticResource ModernButtonStyle}"
-                    Width="150" Height="45"
+                    Width="200" Height="45" Margin="0,0,0,10"
                     Click="BtnOpenUpload_Click"/>
+            
+            <Button x:Name="btnOpenDownload" Content="Tải Xuống Tài Liệu" 
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="200" Height="45"
+                    Click="BtnOpenDownload_Click"/>
         </StackPanel>
     </Grid>
 </Window>

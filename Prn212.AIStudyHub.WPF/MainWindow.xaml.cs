@@ -19,5 +19,12 @@ namespace Prn212.AIStudyHub.WPF
       uploadWindow.Owner = this;
       uploadWindow.ShowDialog();
     }
+
+    private void BtnOpenDownload_Click(object sender, RoutedEventArgs e)
+    {
+      var downloadWindow = new Views.Documents.DownloadDocumentWindow();
+      downloadWindow.Owner = this;
+      downloadWindow.ShowDialog();
+    }
   }
 }
