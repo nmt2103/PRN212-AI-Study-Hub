@@ -25,8 +25,13 @@
             
             <Button x:Name="btnOpenDownload" Content="Tải Xuống Tài Liệu" 
                     Style="{StaticResource ModernButtonStyle}"
-                    Width="200" Height="45"
+                    Width="200" Height="45" Margin="0,0,0,10"
                     Click="BtnOpenDownload_Click"/>
+
+            <Button x:Name="btnOpenDelete" Content="Xóa Tài Liệu" 
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="200" Height="45"
+                    Click="BtnOpenDelete_Click"/>
         </StackPanel>
     </Grid>
 </Window>
