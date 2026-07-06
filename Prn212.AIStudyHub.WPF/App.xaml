@@ -1,9 +1,9 @@
-﻿<Application x:Class="Prn212.AIStudyHub.WPF.App"
+<Application x:Class="Prn212.AIStudyHub.WPF.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
-             StartupUri="MainWindow.xaml">
+             StartupUri="Views/Auth/LoginWindow.xaml">
     <Application.Resources>
-         
+
     </Application.Resources>
 </Application>

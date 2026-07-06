@@ -1,31 +1,103 @@
 <Window x:Class="Prn212.AIStudyHub.WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
-        mc:Ignorable="d"
-        Title="AI Study Hub - Trang Chủ" Height="450" Width="800"
-        WindowStartupLocation="CenterScreen">
-    <Grid Background="#F3F4F6">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Chào Mừng Bạn Đến Với AI Study Hub" 
-                       FontSize="24" FontWeight="Bold" Foreground="#1E3A8A"
-                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
-            <TextBlock Text="Nơi quản lý tài liệu học tập thông minh và dễ dàng." 
-                       FontSize="14" Foreground="#4B5563"
-                       HorizontalAlignment="Center" Margin="0,0,0,30"/>
-            
-            <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu Mới" 
-                    Width="200" Height="45" FontSize="15" FontWeight="SemiBold"
-                    Background="#3B82F6" Foreground="White" BorderThickness="0"
-                    Cursor="Hand" Click="BtnOpenUpload_Click">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-        </StackPanel>
+        Title="AI Study Hub - Tài liệu" Height="620" Width="960"
+        WindowStartupLocation="CenterScreen" Background="#F3F4F6">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Thanh tiêu đề -->
+        <Border Grid.Row="0" Background="#1E3A8A" Padding="20,14">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="AI Study Hub" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Quản lý tài liệu học tập" FontSize="13" Foreground="#BFDBFE"
+                               VerticalAlignment="Center" Margin="14,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock x:Name="txtWelcome" Foreground="White" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <Button x:Name="btnLogout" Content="Đăng xuất" Height="34" Padding="16,0"
+                            Background="#EF4444" Foreground="White" BorderThickness="0"
+                            FontWeight="SemiBold" Cursor="Hand" Click="BtnLogout_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Thanh công cụ: tìm / lọc / sắp xếp / upload -->
+        <Border Grid.Row="1" Background="White" Padding="20,14" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="txtSearch" Grid.Column="0" Height="36" VerticalContentAlignment="Center"
+                         Padding="10,0" BorderBrush="#D1D5DB" Margin="0,0,10,0"
+                         ToolTip="Tìm theo tiêu đề hoặc tên tệp" KeyDown="TxtSearch_KeyDown"/>
+
+                <ComboBox x:Name="cbSubjectFilter" Grid.Column="1" Width="170" Height="36"
+                          VerticalContentAlignment="Center" Margin="0,0,10,0"
+                          DisplayMemberPath="Name" SelectedValuePath="Id"
+                          SelectionChanged="Filter_Changed"/>
+
+                <ComboBox x:Name="cbSort" Grid.Column="2" Width="150" Height="36"
+                          VerticalContentAlignment="Center" Margin="0,0,10,0"
+                          SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Mới nhất" Tag="date" IsSelected="True"/>
+                    <ComboBoxItem Content="Tên (A-Z)" Tag="name"/>
+                    <ComboBoxItem Content="Dung lượng" Tag="size"/>
+                </ComboBox>
+
+                <Button x:Name="btnSearch" Grid.Column="3" Content="Tìm" Height="36" Padding="18,0"
+                        Background="#3B82F6" Foreground="White" BorderThickness="0" FontWeight="SemiBold"
+                        Cursor="Hand" Margin="0,0,10,0" Click="BtnSearch_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button x:Name="btnUpload" Grid.Column="4" Content="+ Tải lên" Height="36" Padding="18,0"
+                        Background="#10B981" Foreground="White" BorderThickness="0" FontWeight="SemiBold"
+                        Cursor="Hand" Click="BtnUpload_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Danh sách tài liệu -->
+        <DataGrid x:Name="dgDocuments" Grid.Row="2" Margin="20,16"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                  RowHeight="38" FontSize="13" Background="White" BorderBrush="#E5E7EB"
+                  AlternatingRowBackground="#F9FAFB">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2*"/>
+                <DataGridTextColumn Header="Môn học" Binding="{Binding Subject.Name}" Width="*"/>
+                <DataGridTextColumn Header="Tên tệp" Binding="{Binding FileName}" Width="2*"/>
+                <DataGridTextColumn Header="Loại" Binding="{Binding FileExtension}" Width="70"/>
+                <DataGridTextColumn Header="Dung lượng (bytes)" Binding="{Binding FileSize, StringFormat={}{0:N0}}" Width="130"/>
+                <DataGridTextColumn Header="Ngày tải" Binding="{Binding UploadedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="130"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Thanh trạng thái -->
+        <Border Grid.Row="3" Background="White" Padding="20,10" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
+            <TextBlock x:Name="txtStatus" Foreground="#4B5563" FontSize="12"/>
+        </Border>
     </Grid>
 </Window>
