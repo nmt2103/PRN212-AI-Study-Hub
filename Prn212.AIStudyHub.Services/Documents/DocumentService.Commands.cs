@@ -101,9 +101,19 @@ public partial class DocumentService
 
   public async Task UpdateMetadataAsync(int documentId, string title, int subjectId)
   {
-    // TODO (DOC 1): lấy document theo id, cập nhật Title/SubjectId, SaveChanges.
-    await Task.CompletedTask;
-    throw new NotImplementedException("Cài đặt UpdateMetadata tại đây.");
+    if (string.IsNullOrWhiteSpace(title))
+      throw new ArgumentException("Tiêu đề tài liệu không được để trống.");
+
+    using var context = new AistudyHubDbContext();
+
+    var doc = await context.Documents.FindAsync(documentId);
+    if (doc == null)
+      throw new KeyNotFoundException("Không tìm thấy tài liệu cần chỉnh sửa trên hệ thống.");
+
+    doc.Title = title.Trim();
+    doc.SubjectId = subjectId;
+
+    await context.SaveChangesAsync();
   }
 
   public async Task DeleteAsync(int documentId)

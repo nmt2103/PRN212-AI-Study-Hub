@@ -90,6 +90,11 @@
                     Width="200" Height="45" Margin="0,0,0,10"
                     Click="BtnOpenDownload_Click"/>
 
+            <Button x:Name="btnOpenEdit" Content="Chỉnh Sửa Tài Liệu" 
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="200" Height="45" Margin="0,0,0,10"
+                    Click="BtnOpenEdit_Click"/>
+
             <Button x:Name="btnOpenDelete" Content="Xóa Tài Liệu" 
                     Style="{StaticResource ModernButtonStyle}"
                     Width="200" Height="45"
