@@ -1,0 +1,83 @@
+﻿<Window x:Class="Prn212.AIStudyHub.WPF.Views.Account.UpdateProfileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF.Views.Account"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        WindowStartupLocation="CenterScreen"
+        Title="UpdateProfileWindow" Height="450" Width="800">
+    <Grid Background="#F8FAFC">
+        <StackPanel Width="450"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+
+            <Border Width="450"
+                Background="White"
+                BorderBrush="#DDD"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="20"
+                Margin="0,20"> 
+
+                <TextBlock 
+                    Name="txtFullName"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"/>
+            </Border>
+
+
+            <TextBlock Text="Email" Margin="0,0,0,5"/>
+            <TextBox Name="txtEmail"
+                IsEnabled="False"
+                Margin="0,0,0,15"
+                Height="25"
+                Style="{StaticResource ModernTextBoxStyle}"
+                     />
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="First Name" Margin="0,0,0,5"/>
+                    <TextBox Name="txtFirstName"
+                 Height="25"
+                 Style="{StaticResource ModernTextBoxStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Last Name" Margin="0,0,0,5"/>
+                    <TextBox Name="txtLastName"
+                 Height="25"
+                 Style="{StaticResource ModernTextBoxStyle}"/>
+                </StackPanel>
+            </Grid>
+            <TextBlock Text="Created At" Margin="0,0,0,5"/>
+            <DatePicker Name="dpCreateAt"
+                IsEnabled="False"
+                Margin="0,0,0,20"
+                Height="30"
+                        />
+
+            <UniformGrid Columns="2" 
+                 Margin="0,0,0,10">
+                <Button Name="btnBack" Click="btnBack_click"
+                    Content="Back"
+                    Margin="0,0,5,0"
+                    Style="{StaticResource ModernButtonStyle}"/>
+
+                <Button Name="btnUpdateProfile" Click="btnUpdateProfile_Click" 
+                    Content="Save Changes"
+                    Margin="5,0,0,0"
+                    Style="{StaticResource SuccessButtonStyle}"/>
+            </UniformGrid>
+        </StackPanel>
+    </Grid>
+
+</Window>
