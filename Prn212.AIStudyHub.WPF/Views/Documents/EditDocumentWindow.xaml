@@ -1,0 +1,41 @@
+<Window x:Class="Prn212.AIStudyHub.WPF.Views.Documents.EditDocumentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chỉnh Sửa Tài Liệu" Height="360" Width="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Chỉnh Sửa Thông Tin Tài Liệu" 
+                   Style="{StaticResource SubHeaderTextBlockStyle}" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Top">
+            <TextBlock Text="Chọn tài liệu muốn chỉnh sửa (*):" Style="{StaticResource FormLabelStyle}"/>
+            <ComboBox x:Name="cbDocuments" Height="34" Margin="0,0,0,15"
+                      DisplayMemberPath="Title" SelectedValuePath="Id"
+                      SelectionChanged="CbDocuments_SelectionChanged"
+                      Style="{StaticResource ModernComboBoxStyle}"/>
+
+            <TextBlock Text="Tiêu đề tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
+            <TextBox x:Name="txtTitle" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
+
+            <TextBlock Text="Chọn môn học (*):" Style="{StaticResource FormLabelStyle}"/>
+            <ComboBox x:Name="cbSubject" Height="34" Margin="0,0,0,15"
+                      DisplayMemberPath="Name" SelectedValuePath="Id"
+                      Style="{StaticResource ModernComboBoxStyle}"/>
+        </StackPanel>
+
+        <UniformGrid Grid.Row="3" Columns="2" Rows="1" Height="38">
+            <Button x:Name="btnSave" Content="Lưu Thay Đổi" Margin="0,0,10,0" Click="BtnSave_Click"
+                    Style="{StaticResource SuccessButtonStyle}"/>
+            <Button x:Name="btnCancel" Content="Đóng" Margin="10,0,0,0" Click="BtnCancel_Click"
+                    Style="{StaticResource ModernButtonStyle}"/>
+        </UniformGrid>
+    </Grid>
+</Window>

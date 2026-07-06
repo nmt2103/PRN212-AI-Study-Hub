@@ -34,16 +34,23 @@ namespace Prn212.AIStudyHub.WPF
       deleteWindow.ShowDialog();
     }
 
-        private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
-        {
-            var updateWindow = new Views.Account.UpdateProfileWindow();
-            updateWindow.Owner = this;
-            updateWindow.ShowDialog();
-        }
-
-        private void btnProfile_Click(object sender, RoutedEventArgs e)
-        {
-            ProfilePopup.IsOpen = !ProfilePopup.IsOpen;
-        }
+    private void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
+    {
+      var editWindow = new Views.Documents.EditDocumentWindow();
+      editWindow.Owner = this;
+      editWindow.ShowDialog();
     }
+
+    private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
+    {
+      var updateWindow = new Views.Account.UpdateProfileWindow();
+      updateWindow.Owner = this;
+      updateWindow.ShowDialog();
+    }
+
+    private void btnProfile_Click(object sender, RoutedEventArgs e)
+    {
+      ProfilePopup.IsOpen = !ProfilePopup.IsOpen;
+    }
+  }
 }
