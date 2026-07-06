@@ -1,0 +1,105 @@
+<Window x:Class="Prn212.AIStudyHub.WPF.Views.Documents.ViewDocumentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF.Views.Documents"
+        mc:Ignorable="d"
+        Title="Xem Chi Tiết Tài Liệu" Height="650" Width="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Xem Chi Tiết Tài Liệu" 
+                   Style="{StaticResource SubHeaderTextBlockStyle}"
+                   Margin="0,0,0,20"/>
+
+        <!-- Document Selection -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,15">
+            <TextBlock Text="Chọn tài liệu để xem (*)" Style="{StaticResource FormLabelStyle}"/>
+            <ComboBox x:Name="cbDocuments" Style="{StaticResource ModernComboBoxStyle}"
+                      DisplayMemberPath="Title" SelectedValuePath="Id"
+                      SelectionChanged="CbDocuments_SelectionChanged"/>
+        </StackPanel>
+
+        <!-- Document Details -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="spDocumentDetails" Margin="0,0,0,15">
+                <!-- Title -->
+                <TextBlock Text="Tiêu đề:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtTitle" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- File Name -->
+                <TextBlock Text="Tên tệp tin:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtFileName" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- File Size -->
+                <TextBlock Text="Kích thước tệp:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtFileSize" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- File Extension -->
+                <TextBlock Text="Loại tệp:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtFileExtension" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- Upload Date -->
+                <TextBlock Text="Ngày tải lên:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtUploadedDate" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- Subject -->
+                <TextBlock Text="Môn học:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtSubject" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- Author -->
+                <TextBlock Text="Người tải lên:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtAuthor" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+
+                <!-- Content Type -->
+                <TextBlock Text="Loại nội dung:" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtContentType" Style="{StaticResource ModernTextBoxStyle}" 
+                         IsReadOnly="True" Margin="0,0,0,15"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Download Progress -->
+        <StackPanel Grid.Row="3" x:Name="spProgress" Visibility="Collapsed" Margin="0,0,0,15">
+            <TextBlock Text="Đang tải xuống..." Style="{StaticResource HintTextBlockStyle}" Margin="0,0,0,5"/>
+            <ProgressBar x:Name="pbProgress" Style="{StaticResource ModernProgressBarStyle}" 
+                         IsIndeterminate="False" Height="8" Margin="0,0,0,5"/>
+            <TextBlock x:Name="txtStatus" Style="{StaticResource HintTextBlockStyle}"/>
+        </StackPanel>
+
+        <!-- Action Buttons -->
+        <UniformGrid Grid.Row="4" Columns="3" Rows="1" Height="38" Margin="0,0,0,15">
+            <Button x:Name="btnDownload" Content="⬇ Tải Xuống" Margin="0,0,5,0" 
+                    Click="BtnDownload_Click" Style="{StaticResource SuccessButtonStyle}"
+                    IsEnabled="False"/>
+            <Button x:Name="btnEdit" Content="✏ Sửa" Margin="5,0,5,0" 
+                    Click="BtnEdit_Click" Style="{StaticResource ModernButtonStyle}"
+                    IsEnabled="False"/>
+            <Button x:Name="btnDelete" Content="🗑 Xóa" Margin="5,0,0,0" 
+                    Click="BtnDelete_Click" Style="{StaticResource DangerButtonStyle}"
+                    IsEnabled="False"/>
+        </UniformGrid>
+
+        <!-- Close Button -->
+        <Button Grid.Row="5" x:Name="btnCancel" Content="Đóng" Height="38" 
+                Click="BtnCancel_Click" Style="{StaticResource DangerButtonStyle}"/>
+    </Grid>
+</Window>

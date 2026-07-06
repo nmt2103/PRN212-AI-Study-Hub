@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="AI Study Hub - Trang Chủ" Height="450" Width="800"
         WindowStartupLocation="CenterScreen">
-    
+
     <Grid Background="{StaticResource BackgroundBrush}">
         <StackPanel HorizontalAlignment="Right">
             <Border
@@ -71,7 +71,7 @@
                 </StackPanel>
             </Border>
         </Popup>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="350" >
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="372" >
             <TextBlock Text="Chào Mừng Bạn Đến Với AI Study Hub" 
                        Style="{StaticResource HeaderTextBlockStyle}"
                        HorizontalAlignment="Center" Margin="0,0,0,10"/>
@@ -84,6 +84,11 @@
                     Style="{StaticResource ModernButtonStyle}"
                     Width="200" Height="45" Margin="0,0,0,10"
                     Click="BtnOpenUpload_Click"/>
+            
+            <Button x:Name="btnOpenList" Content="Xem Tài Liệu Cũ" 
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="200" Height="45" Margin="0,0,0,10"
+                    Click="BtnOpenList_Click"/>
 
             <Button x:Name="btnOpenDownload" Content="Tải Xuống Tài Liệu" 
                     Style="{StaticResource ModernButtonStyle}"
@@ -97,8 +102,9 @@
 
             <Button x:Name="btnOpenDelete" Content="Xóa Tài Liệu" 
                     Style="{StaticResource ModernButtonStyle}"
-                    Width="200" Height="45"
+                    Width="200" Height="45" Margin="0,0,0,10"
                     Click="BtnOpenDelete_Click"/>
+
         </StackPanel>
     </Grid>
 </Window>
