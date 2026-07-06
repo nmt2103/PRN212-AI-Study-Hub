@@ -7,22 +7,84 @@
         mc:Ignorable="d"
         Title="AI Study Hub - Trang Chủ" Height="450" Width="800"
         WindowStartupLocation="CenterScreen">
+    
     <Grid Background="{StaticResource BackgroundBrush}">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-          
+        <StackPanel HorizontalAlignment="Right">
+            <Border
+                BorderThickness="1"
+                BorderBrush="HotPink"
+                CornerRadius="20"
+                Margin="0,0,10,0"
+                >
+                <Button Name="btnProfile"
+                Click="btnProfile_Click"
+                Width="120"
+                Height="40"
+                Style="{StaticResource RoundedButtonStyle}"
+                        >
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="👤" Foreground="Azure"/>
+                        <TextBlock Text=" Huy" Foreground="Azure" />
+                    </StackPanel>
+                </Button>
+            </Border>
+
+        </StackPanel>
+        <Popup Name="ProfilePopup"
+                PlacementTarget="{Binding ElementName=btnProfile}"
+                Placement="Bottom"
+                StaysOpen="False"
+                AllowsTransparency="True"
+               >
+
+            <Border Background="White"
+            BorderBrush="#DDD"
+            BorderThickness="1"
+            CornerRadius="20"
+            Padding="10"
+                    >
+                <StackPanel Width="150">
+
+                    <TextBlock Text="Huy"
+                       FontWeight="Bold"/>
+
+                    <TextBlock Text="huy@gmail.com"
+                       FontSize="12"
+                       Foreground="Gray"
+                       Margin="0,0,0,10"/>
+
+                    <Button Name="btnUpdateProfile"
+                            Content="My Profile"
+                            Margin="0,0,0,10"
+                            Click="btnUpdateProfile_Click"
+                            Style="{StaticResource ButtonPopupStyle}"/>
+                    <Button Content="Change Password"
+                            Margin="0,0,0,10"
+                            Style="{StaticResource ButtonPopupStyle}"
+                            />
+                    <Separator/>
+                    <Button Content="Logout"
+                            Margin="0,0,0,10"
+                            Style="{StaticResource ButtonPopupStyle}"
+                            />
+
+                </StackPanel>
+            </Border>
+        </Popup>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="350" >
             <TextBlock Text="Chào Mừng Bạn Đến Với AI Study Hub" 
                        Style="{StaticResource HeaderTextBlockStyle}"
                        HorizontalAlignment="Center" Margin="0,0,0,10"/>
-          
+
             <TextBlock Text="Nơi quản lý tài liệu học tập thông minh và dễ dàng." 
                        Style="{StaticResource DescriptionTextBlockStyle}"
                        Margin="0,0,0,30"/>
-            
+
             <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu Mới" 
                     Style="{StaticResource ModernButtonStyle}"
                     Width="200" Height="45" Margin="0,0,0,10"
                     Click="BtnOpenUpload_Click"/>
-            
+
             <Button x:Name="btnOpenDownload" Content="Tải Xuống Tài Liệu" 
                     Style="{StaticResource ModernButtonStyle}"
                     Width="200" Height="45" Margin="0,0,0,10"
