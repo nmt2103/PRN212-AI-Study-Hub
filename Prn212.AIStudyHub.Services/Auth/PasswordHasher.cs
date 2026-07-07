@@ -28,7 +28,8 @@ public static class PasswordHasher
     if (parts.Length != 3)
       return stored == password;
 
-    if (!int.TryParse(parts[0], out int iterations)) return false;
+    if (!int.TryParse(parts[0], out int iterations))
+      return false;
     byte[] salt = Convert.FromBase64String(parts[1]);
     byte[] expected = Convert.FromBase64String(parts[2]);
     byte[] actual = Rfc2898DeriveBytes.Pbkdf2(

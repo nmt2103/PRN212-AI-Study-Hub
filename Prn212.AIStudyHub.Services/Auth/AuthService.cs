@@ -16,9 +16,12 @@ public class AuthService
     using var context = new AistudyHubDbContext();
 
     var user = context.AppUsers.FirstOrDefault(u => u.Email == email);
-    if (user == null) return null;          // không có email này
-    if (!user.IsActive) return null;        // tài khoản bị khóa
-    if (!PasswordHasher.Verify(password, user.PasswordHash)) return null; // sai mật khẩu
+    if (user == null)
+      return null;          // không có email này
+    if (!user.IsActive)
+      return null;        // tài khoản bị khóa
+    if (!PasswordHasher.Verify(password, user.PasswordHash))
+      return null; // sai mật khẩu
 
     return user;
   }

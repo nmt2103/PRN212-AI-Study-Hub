@@ -1,6 +1,6 @@
+using Prn212.AIStudyHub.Services.Auth;
 using System.Windows;
 using System.Windows.Input;
-using Prn212.AIStudyHub.Services.Auth;
 
 namespace Prn212.AIStudyHub.WPF.Views.Auth
 {
@@ -56,7 +56,8 @@ namespace Prn212.AIStudyHub.WPF.Views.Auth
 
     private void Pwd_KeyDown(object sender, KeyEventArgs e)
     {
-      if (e.Key == Key.Enter) BtnLogin_Click(sender, e);
+      if (e.Key == Key.Enter)
+        BtnLogin_Click(sender, e);
     }
 
     private void ShowError(string message)
