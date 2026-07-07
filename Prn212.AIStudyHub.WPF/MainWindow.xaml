@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
-        Title="AI Study Hub - Trang Chủ" Height="650" Width="1000"
+        Title="AI Study Hub - Trang Chủ" Height="650" Width="1050"
         WindowStartupLocation="CenterScreen">
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
- 
+
         <!-- 1. Thanh tiêu đề (Header) -->
         <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="20,14">
             <Grid>
@@ -72,6 +72,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Tìm kiếm -->
@@ -102,13 +103,16 @@
                 <Button x:Name="btnUpload" Grid.Column="4" Content="+ Tải Lên" Height="36" Click="BtnUpload_Click"
                         Style="{StaticResource SuccessButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
 
-                <Button x:Name="btnOpenDownload" Grid.Column="5" Content="Tải Xuống" Height="36" Click="BtnOpenDownload_Click"
+                <Button x:Name="btnOpenDetail" Grid.Column="5" Content="Chi Tiết" Height="36" Click="BtnOpenDetail_Click"
                         Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
 
-                <Button x:Name="btnOpenEdit" Grid.Column="6" Content="Chỉnh Sửa" Height="36" Click="BtnOpenEdit_Click"
+                <Button x:Name="btnOpenDownload" Grid.Column="6" Content="Tải Xuống" Height="36" Click="BtnOpenDownload_Click"
                         Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
 
-                <Button x:Name="btnOpenDelete" Grid.Column="7" Content="Xóa" Height="36" Click="BtnOpenDelete_Click"
+                <Button x:Name="btnOpenEdit" Grid.Column="7" Content="Chỉnh Sửa" Height="36" Click="BtnOpenEdit_Click"
+                        Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
+
+                <Button x:Name="btnOpenDelete" Grid.Column="8" Content="Xóa" Height="36" Click="BtnOpenDelete_Click"
                         Style="{StaticResource DangerButtonStyle}" Padding="15,0"/>
             </Grid>
         </Border>
@@ -118,7 +122,8 @@
                   AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                   RowHeight="38" FontSize="13" Background="White" BorderBrush="#E5E7EB"
-                  AlternatingRowBackground="#F9FAFB">
+                  AlternatingRowBackground="#F9FAFB"
+                  MouseDoubleClick="DgDocuments_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2*"/>
                 <DataGridTextColumn Header="Môn học" Binding="{Binding Subject.Name}" Width="*"/>
