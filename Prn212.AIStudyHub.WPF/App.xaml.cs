@@ -1,5 +1,4 @@
 using Prn212.AIStudyHub.DataAccess;
-using Prn212.AIStudyHub.Services.Auth;
 using System.Windows;
 
 namespace Prn212.AIStudyHub.WPF
@@ -9,22 +8,9 @@ namespace Prn212.AIStudyHub.WPF
   /// </summary>
   public partial class App : Application
   {
-    /// <summary>Tài khoản đang đăng nhập (session).</summary>
+    /// <summary>
+    /// Tài khoản đang đăng nhập. Được gán khi Login thành công, xóa (null) khi Đăng xuất.
+    /// </summary>
     public static AppUser? CurrentUser { get; set; }
-
-    protected override void OnStartup(StartupEventArgs e)
-    {
-      base.OnStartup(e);
-
-      try
-      {
-        // Giả lập đăng nhập bằng 1 tài khoản mẫu (sau này nhóm AUTH thay bằng màn hình login)
-        CurrentUser = new AuthService().GetDefaultUser();
-      }
-      catch (Exception ex)
-      {
-        System.Diagnostics.Debug.WriteLine($"Lỗi khởi tạo session giả lập: {ex.Message}");
-      }
-    }
   }
 }

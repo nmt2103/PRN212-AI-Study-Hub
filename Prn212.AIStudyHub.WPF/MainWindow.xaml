@@ -1,104 +1,137 @@
 <Window x:Class="Prn212.AIStudyHub.WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
-        mc:Ignorable="d"
-        Title="AI Study Hub - Trang Chủ" Height="450" Width="800"
+        Title="AI Study Hub - Trang Chủ" Height="650" Width="1000"
         WindowStartupLocation="CenterScreen">
-    
     <Grid Background="{StaticResource BackgroundBrush}">
-        <StackPanel HorizontalAlignment="Right">
-            <Border
-                BorderThickness="1"
-                BorderBrush="HotPink"
-                CornerRadius="20"
-                Margin="0,0,10,0"
-                >
-                <Button Name="btnProfile"
-                Click="btnProfile_Click"
-                Width="120"
-                Height="40"
-                Style="{StaticResource RoundedButtonStyle}"
-                        >
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="👤" Foreground="Azure"/>
-                        <TextBlock Text=" Huy" Foreground="Azure" />
-                    </StackPanel>
-                </Button>
-            </Border>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+ 
+        <!-- 1. Thanh tiêu đề (Header) -->
+        <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="20,14">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="AI Study Hub" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Hệ thống quản lý tài liệu học tập" FontSize="13" Foreground="#BFDBFE"
+                               VerticalAlignment="Center" Margin="14,0,0,0"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock x:Name="txtWelcome" Foreground="White" VerticalAlignment="Center" Margin="0,0,16,0" FontWeight="SemiBold"/>
+                    
+                    <!-- Nút Profile -->
+                    <Border BorderThickness="1" BorderBrush="#BFDBFE" CornerRadius="17">
+                        <Button x:Name="btnProfile" Click="btnProfile_Click" Width="120" Height="34"
+                                Style="{StaticResource RoundedButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👤" Foreground="Azure"/>
+                                <TextBlock x:Name="txtProfileButtonText" Text=" Hồ sơ" Foreground="Azure"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
 
-        </StackPanel>
+        <!-- Popup Menu cho Profile -->
         <Popup Name="ProfilePopup"
-                PlacementTarget="{Binding ElementName=btnProfile}"
-                Placement="Bottom"
-                StaysOpen="False"
-                AllowsTransparency="True"
-               >
-
-            <Border Background="White"
-            BorderBrush="#DDD"
-            BorderThickness="1"
-            CornerRadius="20"
-            Padding="10"
-                    >
-                <StackPanel Width="150">
-
-                    <TextBlock Text="Huy"
-                       FontWeight="Bold"/>
-
-                    <TextBlock Text="huy@gmail.com"
-                       FontSize="12"
-                       Foreground="Gray"
-                       Margin="0,0,0,10"/>
-
-                    <Button Name="btnUpdateProfile"
-                            Content="My Profile"
-                            Margin="0,0,0,10"
-                            Click="btnUpdateProfile_Click"
-                            Style="{StaticResource ButtonPopupStyle}"/>
-                    <Button Content="Change Password"
-                            Margin="0,0,0,10"
-                            Style="{StaticResource ButtonPopupStyle}"
-                            />
-                    <Separator/>
-                    <Button Content="Logout"
-                            Margin="0,0,0,10"
-                            Style="{StaticResource ButtonPopupStyle}"
-                            />
-
+               PlacementTarget="{Binding ElementName=btnProfile}"
+               Placement="Bottom"
+               StaysOpen="False"
+               AllowsTransparency="True">
+            <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="12" Padding="15" Margin="0,5,0,0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.15"/>
+                </Border.Effect>
+                <StackPanel Width="160">
+                    <TextBlock x:Name="txtProfileName" Text="User" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock x:Name="txtProfileEmail" Text="user@gmail.com" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,12"/>
+                    
+                    <Button Name="btnUpdateProfile" Content="Hồ sơ của tôi" Margin="0,0,0,8" Click="btnUpdateProfile_Click" Style="{StaticResource ButtonPopupStyle}"/>
+                    <Button Content="Đổi mật khẩu" Margin="0,0,0,8" Style="{StaticResource ButtonPopupStyle}"/>
+                    <Separator Margin="0,4"/>
+                    <Button Content="Đăng xuất" Margin="0,8,0,0" Click="BtnLogout_Click" Style="{StaticResource ButtonPopupStyle}"/>
                 </StackPanel>
             </Border>
         </Popup>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="350" >
-            <TextBlock Text="Chào Mừng Bạn Đến Với AI Study Hub" 
-                       Style="{StaticResource HeaderTextBlockStyle}"
-                       HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Nơi quản lý tài liệu học tập thông minh và dễ dàng." 
-                       Style="{StaticResource DescriptionTextBlockStyle}"
-                       Margin="0,0,0,30"/>
+        <!-- 2. Thanh công cụ (Toolbar) -->
+        <Border Grid.Row="1" Background="White" Padding="20,14" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <Button x:Name="btnOpenUpload" Content="Đăng Tải Tài Liệu Mới" 
-                    Style="{StaticResource ModernButtonStyle}"
-                    Width="200" Height="45" Margin="0,0,0,10"
-                    Click="BtnOpenUpload_Click"/>
+                <!-- Tìm kiếm -->
+                <TextBox x:Name="txtSearch" Grid.Column="0" Height="36" Margin="0,0,10,0"
+                         Style="{StaticResource ModernTextBoxStyle}"
+                         KeyDown="TxtSearch_KeyDown"/>
 
-            <Button x:Name="btnOpenDownload" Content="Tải Xuống Tài Liệu" 
-                    Style="{StaticResource ModernButtonStyle}"
-                    Width="200" Height="45" Margin="0,0,0,10"
-                    Click="BtnOpenDownload_Click"/>
+                <!-- Lọc Môn học -->
+                <ComboBox x:Name="cbSubjectFilter" Grid.Column="1" Width="170" Height="36" Margin="0,0,10,0"
+                          DisplayMemberPath="Name" SelectedValuePath="Id"
+                          SelectionChanged="Filter_Changed"
+                          Style="{StaticResource ModernComboBoxStyle}"/>
 
-            <Button x:Name="btnOpenEdit" Content="Chỉnh Sửa Tài Liệu" 
-                    Style="{StaticResource ModernButtonStyle}"
-                    Width="200" Height="45" Margin="0,0,0,10"
-                    Click="BtnOpenEdit_Click"/>
+                <!-- Sắp xếp -->
+                <ComboBox x:Name="cbSort" Grid.Column="2" Width="130" Height="36" Margin="0,0,10,0"
+                          SelectionChanged="Filter_Changed"
+                          Style="{StaticResource ModernComboBoxStyle}">
+                    <ComboBoxItem Content="Mới nhất" Tag="date" IsSelected="True"/>
+                    <ComboBoxItem Content="Tên (A-Z)" Tag="name"/>
+                    <ComboBoxItem Content="Dung lượng" Tag="size"/>
+                </ComboBox>
 
-            <Button x:Name="btnOpenDelete" Content="Xóa Tài Liệu" 
-                    Style="{StaticResource ModernButtonStyle}"
-                    Width="200" Height="45"
-                    Click="BtnOpenDelete_Click"/>
-        </StackPanel>
+                <!-- Nút Tìm -->
+                <Button x:Name="btnSearch" Grid.Column="3" Content="Tìm Kiếm" Height="36" Click="BtnSearch_Click"
+                        Style="{StaticResource ModernButtonStyle}" Margin="0,0,15,0" Padding="15,0"/>
+
+                <!-- Nhóm nút hành động tài liệu -->
+                <Button x:Name="btnUpload" Grid.Column="4" Content="+ Tải Lên" Height="36" Click="BtnUpload_Click"
+                        Style="{StaticResource SuccessButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
+
+                <Button x:Name="btnOpenDownload" Grid.Column="5" Content="Tải Xuống" Height="36" Click="BtnOpenDownload_Click"
+                        Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
+
+                <Button x:Name="btnOpenEdit" Grid.Column="6" Content="Chỉnh Sửa" Height="36" Click="BtnOpenEdit_Click"
+                        Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
+
+                <Button x:Name="btnOpenDelete" Grid.Column="7" Content="Xóa" Height="36" Click="BtnOpenDelete_Click"
+                        Style="{StaticResource DangerButtonStyle}" Padding="15,0"/>
+            </Grid>
+        </Border>
+
+        <!-- 3. Danh sách tài liệu (DataGrid) -->
+        <DataGrid x:Name="dgDocuments" Grid.Row="2" Margin="20,16"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                  RowHeight="38" FontSize="13" Background="White" BorderBrush="#E5E7EB"
+                  AlternatingRowBackground="#F9FAFB">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2*"/>
+                <DataGridTextColumn Header="Môn học" Binding="{Binding Subject.Name}" Width="*"/>
+                <DataGridTextColumn Header="Tên tệp" Binding="{Binding FileName}" Width="2*"/>
+                <DataGridTextColumn Header="Loại" Binding="{Binding FileExtension}" Width="70"/>
+                <DataGridTextColumn Header="Dung lượng" Binding="{Binding FileSize, StringFormat={}{0:N0} bytes}" Width="130"/>
+                <DataGridTextColumn Header="Ngày tải" Binding="{Binding UploadedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="130"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 4. Thanh trạng thái -->
+        <Border Grid.Row="3" Background="White" Padding="20,10" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
+            <TextBlock x:Name="txtStatus" Style="{StaticResource HintTextBlockStyle}"/>
+        </Border>
     </Grid>
 </Window>
