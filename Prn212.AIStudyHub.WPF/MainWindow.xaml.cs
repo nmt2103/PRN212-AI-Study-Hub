@@ -2,6 +2,7 @@ using Prn212.AIStudyHub.DataAccess;
 using Prn212.AIStudyHub.Services.Documents;
 using Prn212.AIStudyHub.WPF.Views;
 using Prn212.AIStudyHub.WPF.Views.Auth;
+using Prn212.AIStudyHub.WPF.Views.Documents;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,7 +11,7 @@ namespace Prn212.AIStudyHub.WPF
 {
   /// <summary>
   /// Trang chủ sau khi đăng nhập: hiển thị danh sách tài liệu, tìm/lọc/sắp xếp,
-  /// mở màn hình upload và đăng xuất.
+  /// mở màn hình upload, chi tiết, tải xuống, sửa, xóa, và cập nhật thông tin cá nhân.
   /// </summary>
   public partial class MainWindow : Window
   {
@@ -101,6 +102,31 @@ namespace Prn212.AIStudyHub.WPF
       var login = new LoginWindow();
       login.Show();                  // mở lại màn hình đăng nhập trước
       this.Close();                  // rồi đóng trang chủ
+    }
+
+    private void BtnOpenDetail_Click(object sender, RoutedEventArgs e)
+    {
+      int? selectedId = null;
+      if (dgDocuments.SelectedItem is Document selectedDoc)
+      {
+        selectedId = selectedDoc.Id;
+      }
+
+      var viewWindow = new ViewDocumentWindow(selectedId);
+      viewWindow.Owner = this;
+      viewWindow.ShowDialog();
+      LoadDocuments(); // Tải lại danh sách sau khi quay về (nếu có xóa/sửa)
+    }
+
+    private void DgDocuments_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+      if (dgDocuments.SelectedItem is Document selectedDoc)
+      {
+        var viewWindow = new ViewDocumentWindow(selectedDoc.Id);
+        viewWindow.Owner = this;
+        viewWindow.ShowDialog();
+        LoadDocuments(); // Tải lại danh sách sau khi quay về
+      }
     }
 
     private void BtnOpenDownload_Click(object sender, RoutedEventArgs e)
