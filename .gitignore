@@ -6,6 +6,9 @@
 # Local config
 appsettings.json
 
+# Agent
+AGENTS.md
+
 # User-specific files
 *.rsuser
 *.suo
