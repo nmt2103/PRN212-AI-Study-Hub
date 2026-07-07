@@ -8,22 +8,24 @@ namespace Prn212.AIStudyHub.Services.Auth;
 /// </summary>
 public class AccountService
 {
-    private readonly AistudyHubDbContext _context = new();
+  private readonly AistudyHubDbContext _context = new();
 
-    public async Task UpdateProfile(string email, string firstName, string lastName)
-    {
-        AppUser? user = await _context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
-        if (user == null) throw new Exception("User doesn't exist in the system.");
-        user.FirstName = firstName;
-        user.LastName = lastName;
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<AppUser> GetCurrentUser(string email)
+  public async Task UpdateProfile(string email, string firstName, string lastName)
   {
-        var user = await _context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
-        if (user == null) throw new Exception("User doesn't exist in the system.");
-        return user;
+    AppUser? user = await _context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
+    if (user == null)
+      throw new Exception("User doesn't exist in the system.");
+    user.FirstName = firstName;
+    user.LastName = lastName;
+    await _context.SaveChangesAsync();
+  }
+
+  public async Task<AppUser> GetCurrentUser(string email)
+  {
+    var user = await _context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
+    if (user == null)
+      throw new Exception("User doesn't exist in the system.");
+    return user;
   }
 
   public void RequestPasswordReset(string email)

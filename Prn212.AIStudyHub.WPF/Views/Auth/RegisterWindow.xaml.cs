@@ -1,7 +1,7 @@
+using Prn212.AIStudyHub.Services.Auth;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
-using Prn212.AIStudyHub.Services.Auth;
 
 namespace Prn212.AIStudyHub.WPF.Views.Auth
 {
