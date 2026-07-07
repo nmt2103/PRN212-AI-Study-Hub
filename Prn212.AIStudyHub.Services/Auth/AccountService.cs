@@ -20,21 +20,21 @@ public class AccountService
     }
 
     public async Task<AppUser> GetCurrentUser(string email)
-    {
+  {
         var user = await _context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
         if (user == null) throw new Exception("User doesn't exist in the system.");
         return user;
-    }
+  }
 
-    public void RequestPasswordReset(string email)
-    {
-        // TODO (AUTH 2): sinh token, gửi email.
-        throw new NotImplementedException("Nhóm AUTH cài đặt RequestPasswordReset tại đây.");
-    }
+  public void RequestPasswordReset(string email)
+  {
+    // TODO (AUTH 2): sinh token, gửi email.
+    throw new NotImplementedException("Nhóm AUTH cài đặt RequestPasswordReset tại đây.");
+  }
 
-    public void ResetPassword(string email, string token, string newPassword)
-    {
-        // TODO (AUTH 2): kiểm tra token, hash mật khẩu mới, cập nhật.
-        throw new NotImplementedException("Nhóm AUTH cài đặt ResetPassword tại đây.");
-    }
+  public void ResetPassword(string email, string token, string newPassword)
+  {
+    // TODO (AUTH 2): kiểm tra token, hash mật khẩu mới, cập nhật.
+    throw new NotImplementedException("Nhóm AUTH cài đặt ResetPassword tại đây.");
+  }
 }

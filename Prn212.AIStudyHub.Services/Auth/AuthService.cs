@@ -3,31 +3,50 @@ using Prn212.AIStudyHub.DataAccess;
 namespace Prn212.AIStudyHub.Services.Auth;
 
 /// <summary>
-/// Đăng ký / đăng nhập / session. NGƯỜI AUTH 1 làm ở file này.
+/// Đăng nhập / đăng ký. FILE CỦA AUTH 1.
+/// (Đăng xuất chỉ là xóa session ở tầng giao diện: App.CurrentUser = null)
 /// </summary>
 public class AuthService
 {
-  /// <summary>Lấy 1 tài khoản mẫu để giả lập đăng nhập (tạm dùng khi chưa có màn hình login).</summary>
-  public AppUser? GetDefaultUser()
+  /// <summary>
+  /// Đăng nhập: trả về AppUser nếu email + mật khẩu đúng, ngược lại trả về null.
+  /// </summary>
+  public AppUser? Login(string email, string password)
   {
     using var context = new AistudyHubDbContext();
-    return context.AppUsers.FirstOrDefault(u => u.Email == "thuannm@aistudyhub.com")
-           ?? context.AppUsers.FirstOrDefault();
+
+    var user = context.AppUsers.FirstOrDefault(u => u.Email == email);
+    if (user == null) return null;          // không có email này
+    if (!user.IsActive) return null;        // tài khoản bị khóa
+    if (!PasswordHasher.Verify(password, user.PasswordHash)) return null; // sai mật khẩu
+
+    return user;
   }
 
-  public AppUser? Login(string email, string password)
+  /// <summary>
+  /// Đăng ký tài khoản mới. Ném lỗi nếu email đã tồn tại.
+  /// </summary>
+  public AppUser Register(string email, string password, string firstName, string lastName)
   {
     // TODO (AUTH 1): tìm user theo email, so khớp mật khẩu đã HASH.
     using var context = new AistudyHubDbContext();
-    // var user = context.AppUsers.FirstOrDefault(u => u.Email == email);
-    // if (user == null || !VerifyPassword(password, user.PasswordHash)) return null;
-    // return user;
-    throw new NotImplementedException("Nhóm AUTH cài đặt Login tại đây.");
-  }
 
-  public AppUser Register(string email, string password, string firstName, string lastName)
-  {
-    // TODO (AUTH 1): kiểm tra email tồn tại chưa, HASH mật khẩu, thêm AppUser, SaveChanges.
-    throw new NotImplementedException("Nhóm AUTH cài đặt Register tại đây.");
+    if (context.AppUsers.Any(u => u.Email == email))
+      throw new InvalidOperationException("Email này đã được đăng ký.");
+
+    var user = new AppUser
+    {
+      Email = email.Trim(),
+      PasswordHash = PasswordHasher.Hash(password), // luôn HASH, không lưu mật khẩu thô
+      FirstName = firstName.Trim(),
+      LastName = lastName.Trim(),
+      Role = "Student",
+      IsActive = true,
+      CreatedAt = DateTime.UtcNow
+    };
+
+    context.AppUsers.Add(user);
+    context.SaveChanges();
+    return user;
   }
 }
