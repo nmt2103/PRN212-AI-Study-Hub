@@ -16,18 +16,22 @@
                    Style="{StaticResource SubHeaderTextBlockStyle}" Margin="0,0,0,20"/>
 
         <StackPanel Grid.Row="1" VerticalAlignment="Top">
-            <TextBlock Text="Chọn tài liệu muốn chỉnh sửa (*):" Style="{StaticResource FormLabelStyle}"/>
-            <ComboBox x:Name="cbDocuments" Height="34" Margin="0,0,0,15"
-                      DisplayMemberPath="Title" SelectedValuePath="Id"
-                      SelectionChanged="CbDocuments_SelectionChanged"
-                      Style="{StaticResource ModernComboBoxStyle}"/>
+            <StackPanel x:Name="spDocSelection">
+                <TextBlock Text="Chọn tài liệu muốn chỉnh sửa (*):" Style="{StaticResource FormLabelStyle}"/>
+                <ComboBox x:Name="cbDocuments" Height="34" Margin="0,0,0,15"
+                          DisplayMemberPath="Title" SelectedValuePath="Id"
+                          SelectionChanged="CbDocuments_SelectionChanged"
+                          Style="{StaticResource ModernComboBoxStyle}"/>
+            </StackPanel>
 
             <TextBlock Text="Tiêu đề tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
-            <TextBox x:Name="txtTitle" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
+            <TextBox x:Name="txtTitle" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"
+                     TextChanged="TxtTitle_TextChanged"/>
 
             <TextBlock Text="Chọn môn học (*):" Style="{StaticResource FormLabelStyle}"/>
             <ComboBox x:Name="cbSubject" Height="34" Margin="0,0,0,15"
                       DisplayMemberPath="Name" SelectedValuePath="Id"
+                      SelectionChanged="CbSubject_SelectionChanged"
                       Style="{StaticResource ModernComboBoxStyle}"/>
         </StackPanel>
 

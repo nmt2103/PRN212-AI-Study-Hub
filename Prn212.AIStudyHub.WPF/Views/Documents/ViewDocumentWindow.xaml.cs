@@ -224,7 +224,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       try
       {
         // Mở EditDocumentWindow
-        var editWindow = new EditDocumentWindow();
+        var editWindow = new EditDocumentWindow(_currentDocument.Id);
         editWindow.Owner = this;
         editWindow.ShowDialog();
 

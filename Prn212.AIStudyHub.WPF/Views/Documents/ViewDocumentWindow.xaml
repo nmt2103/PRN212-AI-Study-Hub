@@ -81,7 +81,7 @@
             <Button x:Name="btnDownload" Content="⬇ Tải Xuống" Margin="0,0,5,0" 
                     Click="BtnDownload_Click" Style="{StaticResource SuccessButtonStyle}"
                     IsEnabled="False"/>
-            <Button x:Name="btnEdit" Content="✏ Sửa" Margin="5,0,5,0" 
+            <Button x:Name="btnEdit" Content="✏ Chỉnh Sửa" Margin="5,0,5,0" 
                     Click="BtnEdit_Click" Style="{StaticResource ModernButtonStyle}"
                     IsEnabled="False"/>
             <Button x:Name="btnDelete" Content="🗑 Xóa" Margin="5,0,0,0" 
