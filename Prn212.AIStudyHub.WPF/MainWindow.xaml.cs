@@ -44,7 +44,7 @@ namespace Prn212.AIStudyHub.WPF
         private void LoadSubjectFilter()
         {
             var subjects = _documentService.GetAllSubjects();
-            subjects.Insert(0, new Subject { Id = 0, Name = "-- Tất cả môn --" });
+            subjects.Insert(0, new Subject { Id = -1, Name = "-- Tất cả môn --" });
             cbSubjectFilter.ItemsSource = subjects;
             cbSubjectFilter.SelectedIndex = 0;
         }
@@ -56,7 +56,7 @@ namespace Prn212.AIStudyHub.WPF
                 string? keyword = string.IsNullOrWhiteSpace(txtSearch.Text) ? null : txtSearch.Text.Trim();
 
                 int? subjectId = null;
-                if (cbSubjectFilter.SelectedItem is Subject selectedSubject && selectedSubject.Id > 0)
+                if (cbSubjectFilter.SelectedItem is Subject selectedSubject && selectedSubject.Id != -1)
                 {
                     subjectId = selectedSubject.Id;
                 }

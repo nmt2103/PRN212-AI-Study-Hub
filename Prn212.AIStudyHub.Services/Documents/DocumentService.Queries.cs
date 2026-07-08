@@ -66,7 +66,7 @@ public partial class DocumentService
             );
         }
 
-        if (subjectId.HasValue && subjectId.Value > 0)
+        if (subjectId.HasValue && subjectId.Value != -1)
         {
             query = query.Where(d => d.SubjectId == subjectId.Value);
         }
