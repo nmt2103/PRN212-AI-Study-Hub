@@ -107,13 +107,10 @@
                 <Button x:Name="btnOpenDetail" Grid.Column="5" Content="Chi Tiết" Height="36" Click="BtnOpenDetail_Click"
                         Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
 
-                <Button x:Name="btnOpenDownload" Grid.Column="6" Content="Tải Xuống" Height="36" Click="BtnOpenDownload_Click"
+                <Button x:Name="btnOpenEdit" Grid.Column="6" Content="Chỉnh Sửa" Height="36" Click="BtnOpenEdit_Click"
                         Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
 
-                <Button x:Name="btnOpenEdit" Grid.Column="7" Content="Chỉnh Sửa" Height="36" Click="BtnOpenEdit_Click"
-                        Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
-
-                <Button x:Name="btnOpenDelete" Grid.Column="8" Content="Xóa" Height="36" Click="BtnOpenDelete_Click"
+                <Button x:Name="btnOpenDelete" Grid.Column="7" Content="Xóa" Height="36" Click="BtnOpenDelete_Click"
                         Style="{StaticResource DangerButtonStyle}" Padding="15,0"/>
             </Grid>
         </Border>
@@ -125,6 +122,16 @@
                   RowHeight="38" FontSize="13" Background="White" BorderBrush="#E5E7EB"
                   AlternatingRowBackground="#F9FAFB"
                   MouseDoubleClick="DgDocuments_MouseDoubleClick">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="DataGridRow_PreviewMouseRightButtonDown"/>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Tải xuống" Click="MenuItemDownload_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2*"/>
                 <DataGridTextColumn Header="Môn học" Binding="{Binding Subject.Name}" Width="*"/>

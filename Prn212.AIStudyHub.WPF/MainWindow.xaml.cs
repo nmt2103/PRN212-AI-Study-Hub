@@ -179,12 +179,48 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void BtnOpenDownload_Click(object sender, RoutedEventArgs e)
+    private void DataGridRow_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
-      var downloadWindow = new Views.Documents.DownloadDocumentWindow();
-      downloadWindow.Owner = this;
-      downloadWindow.ShowDialog();
-      LoadDocuments();
+      if (sender is DataGridRow row)
+      {
+        row.IsSelected = true;
+        row.Focus();
+      }
+    }
+
+    private async void MenuItemDownload_Click(object sender, RoutedEventArgs e)
+    {
+      if (dgDocuments.SelectedItem is not Document selectedDoc)
+      {
+        MessageBox.Show("Vui lòng chọn tài liệu cần tải!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+      }
+
+      var saveDialog = new Microsoft.Win32.SaveFileDialog
+      {
+        FileName = selectedDoc.FileName,
+        Filter = $"Tệp tin (*{selectedDoc.FileExtension})|*{selectedDoc.FileExtension}|Tất cả các tệp (*.*)|*.*",
+        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+      };
+
+      if (saveDialog.ShowDialog() == true)
+      {
+        string destPath = saveDialog.FileName;
+        try
+        {
+          txtStatus.Text = $"Đang tải xuống '{selectedDoc.Title}'...";
+          await _documentService.DownloadAsync(selectedDoc.Id, destPath);
+          MessageBox.Show("Tải xuống tài liệu thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show($"Lỗi khi tải xuống: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+          LoadDocuments();
+        }
+      }
     }
 
     private void BtnOpenDelete_Click(object sender, RoutedEventArgs e)
