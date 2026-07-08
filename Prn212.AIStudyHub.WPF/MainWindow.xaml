@@ -78,7 +78,8 @@
                 <!-- Tìm kiếm -->
                 <TextBox x:Name="txtSearch" Grid.Column="0" Height="36" Margin="0,0,10,0"
                          Style="{StaticResource ModernTextBoxStyle}"
-                         KeyDown="TxtSearch_KeyDown"/>
+                         KeyDown="TxtSearch_KeyDown"
+                         TextChanged="TxtSearch_TextChanged"/>
 
                 <!-- Lọc Môn học -->
                 <ComboBox x:Name="cbSubjectFilter" Grid.Column="1" Width="170" Height="36" Margin="0,0,10,0"
@@ -133,6 +134,18 @@
                 <DataGridTextColumn Header="Ngày tải" Binding="{Binding UploadedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="130"/>
             </DataGrid.Columns>
         </DataGrid>
+        
+        
+        <!-- Nếu môn học được filtered không có tài liệu nào cả -->
+        <TextBlock x:Name="tbEmptyState"
+           Grid.Row="2" 
+           Text="Không có tài liệu nào để hiển thị"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Center"
+           FontSize="16"
+           FontWeight="SemiBold"
+           Foreground="#999999"
+           Visibility="Collapsed"/>
 
         <!-- 4. Thanh trạng thái -->
         <Border Grid.Row="3" Background="White" Padding="20,10" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">

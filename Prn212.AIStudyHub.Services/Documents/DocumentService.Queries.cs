@@ -9,49 +9,93 @@ namespace Prn212.AIStudyHub.Services.Documents;
 /// </summary>
 public partial class DocumentService
 {
-  public (List<Document> Items, int TotalCount) GetPaged(
-      int page, int pageSize, string? keyword = null, int? subjectId = null, string? sortBy = null)
-  {
-    if (page < 1)
-      page = 1;
-    if (pageSize < 1)
-      pageSize = 10;
-
-    using var context = new AistudyHubDbContext();
-    IQueryable<Document> query = context.Documents
-        .Include(d => d.Subject)
-        .Include(d => d.User);
-
-    if (!string.IsNullOrWhiteSpace(keyword))
-      query = query.Where(d => d.Title.Contains(keyword) || d.FileName.Contains(keyword));
-
-    if (subjectId.HasValue)
-      query = query.Where(d => d.SubjectId == subjectId.Value);
-
-    query = sortBy switch
+    public (List<Document> Items, int TotalCount) GetPaged(
+        int page, int pageSize, string? keyword = null, int? subjectId = null, string? sortBy = null)
     {
-      "name" => query.OrderBy(d => d.Title),
-      "size" => query.OrderByDescending(d => d.FileSize),
-      _ => query.OrderByDescending(d => d.UploadedAt)
-    };
+        if (page < 1)
+            page = 1;
+        if (pageSize < 1)
+            pageSize = 10;
 
-    int total = query.Count();
-    var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-    return (items, total);
-  }
+        using var context = new AistudyHubDbContext();
+        IQueryable<Document> query = context.Documents
+            .Include(d => d.Subject)
+            .Include(d => d.User);
 
-  public Document? GetDetail(int documentId)
-  {
-    using var context = new AistudyHubDbContext();
-    return context.Documents
-        .Include(d => d.Subject)
-        .Include(d => d.User)
-        .FirstOrDefault(d => d.Id == documentId);
-  }
+        if (!string.IsNullOrWhiteSpace(keyword))
+            query = query.Where(d => d.Title.Contains(keyword) || d.FileName.Contains(keyword));
 
-  public List<Subject> GetAllSubjects()
-  {
-    using var context = new AistudyHubDbContext();
-    return context.Subjects.OrderBy(s => s.Name).ToList();
-  }
+        if (subjectId.HasValue)
+            query = query.Where(d => d.SubjectId == subjectId.Value);
+
+        query = sortBy switch
+        {
+            "name" => query.OrderBy(d => d.Title),
+            "size" => query.OrderByDescending(d => d.FileSize),
+            _ => query.OrderByDescending(d => d.UploadedAt)
+        };
+
+        int total = query.Count();
+        var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        return (items, total);
+    }
+
+    /// <summary>
+    /// Tìm kiếm tài liệu theo keyword trên name, subject name, subject description
+    /// </summary>
+    public (List<Document> Items, int TotalCount) SearchDocuments(
+        string? keyword, int? subjectId = null, int page = 1, int pageSize = 10, string? sortBy = null)
+    {
+        if (page < 1)
+            page = 1;
+        if (pageSize < 1)
+            pageSize = 10;
+
+        using var context = new AistudyHubDbContext();
+        IQueryable<Document> query = context.Documents
+            .Include(d => d.Subject)
+            .Include(d => d.User);
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            string lowerKeyword = keyword.ToLower();
+            query = query.Where(d =>
+                d.Title.ToLower().Contains(lowerKeyword) ||
+                d.Subject.Name.ToLower().Contains(lowerKeyword) ||
+                (d.Subject.Description != null && d.Subject.Description.ToLower().Contains(lowerKeyword))
+            );
+        }
+
+        if (subjectId.HasValue && subjectId.Value > 0)
+        {
+            query = query.Where(d => d.SubjectId == subjectId.Value);
+        }
+
+        query = sortBy switch
+        {
+            "name" => query.OrderBy(d => d.Title),
+            "size" => query.OrderByDescending(d => d.FileSize),
+            "subject" => query.OrderBy(d => d.Subject.Name),
+            _ => query.OrderByDescending(d => d.UploadedAt)
+        };
+
+        int total = query.Count();
+        var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        return (items, total);
+    }
+
+    public Document? GetDetail(int documentId)
+    {
+        using var context = new AistudyHubDbContext();
+        return context.Documents
+            .Include(d => d.Subject)
+            .Include(d => d.User)
+            .FirstOrDefault(d => d.Id == documentId);
+    }
+
+    public List<Subject> GetAllSubjects()
+    {
+        using var context = new AistudyHubDbContext();
+        return context.Subjects.OrderBy(s => s.Name).ToList();
+    }
 }
