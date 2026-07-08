@@ -2,7 +2,6 @@ using Microsoft.Win32;
 using Prn212.AIStudyHub.DataAccess;
 using Prn212.AIStudyHub.Services.Documents;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace Prn212.AIStudyHub.WPF.Views.Documents
 {
@@ -27,48 +26,21 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       try
       {
-        LoadDocuments();
         if (_initialDocumentId.HasValue)
         {
-          cbDocuments.SelectedValue = _initialDocumentId.Value;
+          LoadDocumentDetail(_initialDocumentId.Value);
+        }
+        else
+        {
+          MessageBox.Show("Vui lòng chọn tài liệu trước khi xem chi tiết.",
+                          "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+          this.Close();
         }
       }
       catch (Exception ex)
       {
         MessageBox.Show($"Lỗi khi tải dữ liệu:\n{ex.Message}",
                         "Lỗi tải dữ liệu", MessageBoxButton.OK, MessageBoxImage.Error);
-      }
-    }
-
-    /// <summary>
-    /// Tải danh sách tài liệu từ service (không filter, trang 1, 100 item)
-    /// </summary>
-    private void LoadDocuments()
-    {
-      try
-      {
-        var (documents, totalCount) = _documentService.SearchDocuments(page: 1, pageSize: 100);
-        cbDocuments.ItemsSource = documents;
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show($"Lỗi tải danh sách tài liệu:\n{ex.Message}",
-                        "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-      }
-    }
-
-    /// <summary>
-    /// Event: Khi người dùng chọn tài liệu từ combobox
-    /// </summary>
-    private void CbDocuments_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-      if (cbDocuments.SelectedItem is Document selectedDoc)
-      {
-        LoadDocumentDetail(selectedDoc.Id);
-      }
-      else
-      {
-        ClearDocumentDetail();
       }
     }
 
@@ -176,7 +148,6 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
           btnDownload.IsEnabled = false;
           btnEdit.IsEnabled = false;
           btnDelete.IsEnabled = false;
-          btnCancel.IsEnabled = false;
 
           // Gọi service để download
           await _documentService.DownloadAsync(_currentDocument.Id, destPath, progress);
@@ -204,7 +175,6 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
           btnDownload.IsEnabled = true;
           btnEdit.IsEnabled = true;
           btnDelete.IsEnabled = true;
-          btnCancel.IsEnabled = true;
         }
       }
     }
@@ -230,9 +200,6 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
         // Sau khi sửa xong, tải lại chi tiết tài liệu
         LoadDocumentDetail(_currentDocument.Id);
-
-        // Reload danh sách để thấy thay đổi
-        LoadDocuments();
       }
       catch (Exception ex)
       {
@@ -276,9 +243,8 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
           MessageBox.Show("Xóa tài liệu thành công!",
                           "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
-          // Tải lại danh sách
-          LoadDocuments();
-          ClearDocumentDetail();
+          // Đóng cửa sổ vì tài liệu đã bị xóa thành công
+          this.Close();
         }
         catch (Exception ex)
         {
@@ -313,14 +279,6 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
 
       return $"{len:F2} {sizes[order]}";
-    }
-
-    /// <summary>
-    /// Nút Cancel: Đóng cửa sổ
-    /// </summary>
-    private void BtnCancel_Click(object sender, RoutedEventArgs e)
-    {
-      this.Close();
     }
   }
 }
