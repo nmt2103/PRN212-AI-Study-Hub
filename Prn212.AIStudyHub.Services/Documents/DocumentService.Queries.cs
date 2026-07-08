@@ -9,8 +9,11 @@ namespace Prn212.AIStudyHub.Services.Documents;
 /// </summary>
 public partial class DocumentService
 {
-  public (List<Document> Items, int TotalCount) GetPaged(
-      int page, int pageSize, string? keyword = null, int? subjectId = null, string? sortBy = null)
+  /// <summary>
+  /// Tìm kiếm tài liệu theo keyword trên name, subject name, subject description
+  /// </summary>
+  public (List<Document> Items, int TotalCount) SearchDocuments(
+          string? keyword = null, int? subjectId = null, int page = 1, int pageSize = 10, string? sortBy = null)
   {
     if (page < 1)
       page = 1;
@@ -23,15 +26,26 @@ public partial class DocumentService
         .Include(d => d.User);
 
     if (!string.IsNullOrWhiteSpace(keyword))
-      query = query.Where(d => d.Title.Contains(keyword) || d.FileName.Contains(keyword));
+    {
+      string lowerKeyword = keyword.ToLower();
+      query = query.Where(d =>
+          d.Title.ToLower().Contains(lowerKeyword) ||
+          d.FileName.ToLower().Contains(lowerKeyword) ||
+          d.Subject.Name.ToLower().Contains(lowerKeyword) ||
+          (d.Subject.Description != null && d.Subject.Description.ToLower().Contains(lowerKeyword))
+      );
+    }
 
-    if (subjectId.HasValue)
+    if (subjectId.HasValue && subjectId.Value != -1)
+    {
       query = query.Where(d => d.SubjectId == subjectId.Value);
+    }
 
     query = sortBy switch
     {
       "name" => query.OrderBy(d => d.Title),
       "size" => query.OrderByDescending(d => d.FileSize),
+      "subject" => query.OrderBy(d => d.Subject.Name),
       _ => query.OrderByDescending(d => d.UploadedAt)
     };
 

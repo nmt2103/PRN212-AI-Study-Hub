@@ -47,7 +47,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       try
       {
-        var (documents, totalCount) = _documentService.GetPaged(page: 1, pageSize: 100);
+        var (documents, totalCount) = _documentService.SearchDocuments(page: 1, pageSize: 100);
         cbDocuments.ItemsSource = documents;
       }
       catch (Exception ex)

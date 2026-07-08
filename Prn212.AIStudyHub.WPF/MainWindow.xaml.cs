@@ -6,6 +6,7 @@ using Prn212.AIStudyHub.WPF.Views.Documents;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Prn212.AIStudyHub.WPF
 {
@@ -17,11 +18,18 @@ namespace Prn212.AIStudyHub.WPF
   {
     private readonly DocumentService _documentService = new();
     private bool _initialized;
+    private readonly DispatcherTimer _debounceTimer;
 
     public MainWindow()
     {
       InitializeComponent();
       Loaded += MainWindow_Loaded;
+
+      _debounceTimer = new DispatcherTimer
+      {
+        Interval = TimeSpan.FromMilliseconds(300)
+      };
+      _debounceTimer.Tick += DebounceTimer_Tick;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -42,7 +50,7 @@ namespace Prn212.AIStudyHub.WPF
     private void LoadSubjectFilter()
     {
       var subjects = _documentService.GetAllSubjects();
-      subjects.Insert(0, new Subject { Id = 0, Name = "-- Tất cả môn --" });
+      subjects.Insert(0, new Subject { Id = -1, Name = "-- Tất cả môn --" });
       cbSubjectFilter.ItemsSource = subjects;
       cbSubjectFilter.SelectedIndex = 0;
     }
@@ -54,14 +62,31 @@ namespace Prn212.AIStudyHub.WPF
         string? keyword = string.IsNullOrWhiteSpace(txtSearch.Text) ? null : txtSearch.Text.Trim();
 
         int? subjectId = null;
-        if (cbSubjectFilter.SelectedValue is int sid && sid > 0)
-          subjectId = sid;
+        if (cbSubjectFilter.SelectedItem is Subject selectedSubject && selectedSubject.Id != -1)
+        {
+          subjectId = selectedSubject.Id;
+        }
 
         string? sortBy = (cbSort.SelectedItem as ComboBoxItem)?.Tag?.ToString();
 
-        var (items, total) = _documentService.GetPaged(1, 200, keyword, subjectId, sortBy);
+        // Tìm kiếm trên: Title, Subject Name, Subject Description
+        var (items, total) = _documentService.SearchDocuments(keyword, subjectId, 1, 200, sortBy);
         dgDocuments.ItemsSource = items;
-        txtStatus.Text = $"Hiển thị {items.Count} / tổng {total} tài liệu.";
+
+        if (items == null || items.Count == 0)
+        {
+          tbEmptyState.Visibility = Visibility.Visible;
+        }
+        else
+        {
+          tbEmptyState.Visibility = Visibility.Collapsed;
+        }
+
+        // Hiển thị trạng thái tìm kiếm
+        string searchStatus = string.IsNullOrWhiteSpace(keyword)
+            ? $"Hiển thị {items.Count} / tổng {total} tài liệu."
+            : $"Hiển thị {items.Count} / tìm thấy {total} kết quả cho '{keyword}'.";
+        txtStatus.Text = searchStatus;
       }
       catch (Exception ex)
       {
@@ -76,12 +101,37 @@ namespace Prn212.AIStudyHub.WPF
         LoadDocuments();
     }
 
-    private void BtnSearch_Click(object sender, RoutedEventArgs e) => LoadDocuments();
+    private void BtnSearch_Click(object sender, RoutedEventArgs e)
+    {
+      _debounceTimer.Stop();
+      LoadDocuments();
+    }
 
     private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
+      {
+        _debounceTimer.Stop();
         LoadDocuments();
+      }
+    }
+
+    /// <summary>
+    /// Real-time search với debounce 300ms
+    /// Khi user gõ: delay 300ms trước khi search
+    /// Nếu user gõ tiếp: reset timer
+    /// Khi user dừng gõ 300ms: trigger search
+    /// </summary>
+    private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+      _debounceTimer.Stop();
+      _debounceTimer.Start();
+    }
+
+    private void DebounceTimer_Tick(object? sender, EventArgs e)
+    {
+      _debounceTimer.Stop();
+      LoadDocuments();
     }
 
     private void BtnUpload_Click(object sender, RoutedEventArgs e)
@@ -134,6 +184,7 @@ namespace Prn212.AIStudyHub.WPF
       var downloadWindow = new Views.Documents.DownloadDocumentWindow();
       downloadWindow.Owner = this;
       downloadWindow.ShowDialog();
+      LoadDocuments();
     }
 
     private void BtnOpenDelete_Click(object sender, RoutedEventArgs e)
@@ -141,6 +192,7 @@ namespace Prn212.AIStudyHub.WPF
       var deleteWindow = new Views.Documents.DeleteDocumentWindow();
       deleteWindow.Owner = this;
       deleteWindow.ShowDialog();
+      LoadDocuments();
     }
 
     private void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
@@ -148,6 +200,7 @@ namespace Prn212.AIStudyHub.WPF
       var editWindow = new Views.Documents.EditDocumentWindow();
       editWindow.Owner = this;
       editWindow.ShowDialog();
+      LoadDocuments();
     }
 
     private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
