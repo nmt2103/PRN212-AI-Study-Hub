@@ -69,10 +69,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Tìm kiếm -->
@@ -109,9 +105,6 @@
 
                 <Button x:Name="btnOpenEdit" Grid.Column="6" Content="Chỉnh Sửa" Height="36" Click="BtnOpenEdit_Click"
                         Style="{StaticResource ModernButtonStyle}" Margin="0,0,8,0" Padding="15,0"/>
-
-                <Button x:Name="btnOpenDelete" Grid.Column="7" Content="Xóa" Height="36" Click="BtnOpenDelete_Click"
-                        Style="{StaticResource DangerButtonStyle}" Padding="15,0"/>
             </Grid>
         </Border>
 
@@ -129,7 +122,10 @@
             </DataGrid.RowStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Xem chi tiết" Click="MenuItemDetail_Click"/>
                     <MenuItem Header="Tải xuống" Click="MenuItemDownload_Click"/>
+                    <MenuItem Header="Chỉnh sửa" Click="MenuItemEdit_Click"/>
+                    <MenuItem Header="Xóa" Click="MenuItemDelete_Click"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
