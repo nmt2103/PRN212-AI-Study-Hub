@@ -70,7 +70,7 @@ public partial class DocumentService
     using var context = new AistudyHubDbContext();
     var doc = await context.Documents.FindAsync(documentId);
     if (doc == null)
-      throw new Exception("Tài liệu không tồn tại trên hệ thống");
+      throw new FileNotFoundException("Tài liệu không tồn tại trên hệ thống");
 
     string sourcePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
     if (!File.Exists(sourcePath))
@@ -79,23 +79,41 @@ public partial class DocumentService
     const int bufferSize = 81920;
     byte[] buffer = new byte[bufferSize];
 
-    using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
-    using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
-
-    long totalBytes = sourceStream.Length;
-    long bytesRead = 0;
-    int read;
-
-    while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+    try
     {
-      await destStream.WriteAsync(buffer, 0, read);
-      bytesRead += read;
+      using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
+      using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
 
-      if (progress != null && totalBytes > 0)
+      long totalBytes = sourceStream.Length;
+      long bytesRead = 0;
+      int read;
+
+      while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
       {
-        double percent = (double) bytesRead / totalBytes * 100;
-        progress.Report(percent);
+        await destStream.WriteAsync(buffer, 0, read);
+        bytesRead += read;
+
+        if (progress != null && totalBytes > 0)
+        {
+          double percent = (double) bytesRead / totalBytes * 100;
+          progress.Report(percent);
+        }
       }
+    }
+    catch
+    {
+      if (File.Exists(destinationFilePath))
+      {
+        try
+        {
+          File.Delete(destinationFilePath);
+        }
+        catch
+        {
+          // Bỏ qua lỗi xóa tệp khi đang xử lý ngoại lệ
+        }
+      }
+      throw;
     }
   }
 
@@ -133,14 +151,21 @@ public partial class DocumentService
       context.Documents.Remove(doc);
       await context.SaveChangesAsync();
 
-      // Xóa file vật lý
-      if (File.Exists(fullPath))
-      {
-        File.Delete(fullPath);
-      }
-
-      // Commit transaction
+      // Commit transaction trước để đảm bảo tính toàn vẹn dữ liệu DB
       await transaction.CommitAsync();
+
+      // Xóa file vật lý sau khi commit thành công (hoạt động best-effort)
+      try
+      {
+        if (File.Exists(fullPath))
+        {
+          File.Delete(fullPath);
+        }
+      }
+      catch (Exception)
+      {
+        // Ghi log/bỏ qua lỗi xóa tệp vật lý vì bản ghi DB đã được xóa thành công
+      }
     }
     catch (Exception)
     {
