@@ -161,26 +161,35 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       {
         string destPath = saveDialog.FileName;
 
-        // Tạo progress callback để cập nhật progress bar
+        // Tạo progress callback để cập nhật trực tiếp trên nhãn nút
         var progress = new Progress<double>(percent =>
         {
-          pbProgress.Value = percent;
-          txtStatus.Text = $"Đang tải xuống: {percent:F0}%";
+          btnDownload.Content = $"Đang tải: {percent:F0}%";
         });
+
+        var originalBackground = btnDownload.Background;
+        string originalContent = btnDownload.Content.ToString() ?? "⬇ Tải Xuống";
 
         try
         {
-          // Hiển thị progress bar
-          spProgress.Visibility = Visibility.Visible;
+          // Vô hiệu hóa các nút hành động trong khi tải xuống
           btnDownload.IsEnabled = false;
           btnEdit.IsEnabled = false;
           btnDelete.IsEnabled = false;
+          btnCancel.IsEnabled = false;
 
           // Gọi service để download
           await _documentService.DownloadAsync(_currentDocument.Id, destPath, progress);
 
+          // Cập nhật nhãn nút thành màu xanh lá hiển thị thành công
+          btnDownload.Content = "Tải thành công! ✔";
+          btnDownload.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green);
+
           MessageBox.Show($"Tải xuống tài liệu thành công!\nĐường dẫn: {destPath}",
                           "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+
+          // Hiển thị nhãn thành công trong 2 giây
+          await Task.Delay(2000);
         }
         catch (Exception ex)
         {
@@ -189,13 +198,13 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         }
         finally
         {
-          // Ẩn progress bar, enable buttons
-          spProgress.Visibility = Visibility.Collapsed;
-          pbProgress.Value = 0;
-          txtStatus.Text = string.Empty;
+          // Khôi phục lại trạng thái ban đầu của các nút bấm
+          btnDownload.Content = originalContent;
+          btnDownload.Background = originalBackground;
           btnDownload.IsEnabled = true;
           btnEdit.IsEnabled = true;
           btnDelete.IsEnabled = true;
+          btnCancel.IsEnabled = true;
         }
       }
     }

@@ -16,7 +16,6 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -77,16 +76,8 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Download Progress -->
-        <StackPanel Grid.Row="3" x:Name="spProgress" Visibility="Collapsed" Margin="0,0,0,15">
-            <TextBlock Text="Đang tải xuống..." Style="{StaticResource HintTextBlockStyle}" Margin="0,0,0,5"/>
-            <ProgressBar x:Name="pbProgress" Style="{StaticResource ModernProgressBarStyle}" 
-                         IsIndeterminate="False" Height="8" Margin="0,0,0,5"/>
-            <TextBlock x:Name="txtStatus" Style="{StaticResource HintTextBlockStyle}"/>
-        </StackPanel>
-
         <!-- Action Buttons -->
-        <UniformGrid Grid.Row="4" Columns="3" Rows="1" Height="38" Margin="0,0,0,15">
+        <UniformGrid Grid.Row="3" Columns="3" Rows="1" Height="38" Margin="0,0,0,15">
             <Button x:Name="btnDownload" Content="⬇ Tải Xuống" Margin="0,0,5,0" 
                     Click="BtnDownload_Click" Style="{StaticResource SuccessButtonStyle}"
                     IsEnabled="False"/>
@@ -99,7 +90,7 @@
         </UniformGrid>
 
         <!-- Close Button -->
-        <Button Grid.Row="5" x:Name="btnCancel" Content="Đóng" Height="38" 
+        <Button Grid.Row="4" x:Name="btnCancel" Content="Đóng" Height="38" 
                 Click="BtnCancel_Click" Style="{StaticResource DangerButtonStyle}"/>
     </Grid>
 </Window>
