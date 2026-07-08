@@ -268,7 +268,13 @@ namespace Prn212.AIStudyHub.WPF
 
     private void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
     {
-      var editWindow = new Views.Documents.EditDocumentWindow();
+      int? selectedId = null;
+      if (dgDocuments.SelectedItem is Document selectedDoc)
+      {
+        selectedId = selectedDoc.Id;
+      }
+
+      var editWindow = new Views.Documents.EditDocumentWindow(selectedId);
       editWindow.Owner = this;
       editWindow.ShowDialog();
       LoadDocuments();
