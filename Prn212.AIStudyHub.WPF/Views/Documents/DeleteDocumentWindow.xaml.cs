@@ -18,7 +18,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       try
       {
-        var result = _documentService.GetPaged(1, 100);
+        var result = _documentService.SearchDocuments(page: 1, pageSize: 100);
         cbDocuments.ItemsSource = result.Items;
       }
       catch (Exception ex)
