@@ -223,12 +223,47 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void BtnOpenDelete_Click(object sender, RoutedEventArgs e)
+    private void MenuItemDetail_Click(object sender, RoutedEventArgs e)
     {
-      var deleteWindow = new Views.Documents.DeleteDocumentWindow();
-      deleteWindow.Owner = this;
-      deleteWindow.ShowDialog();
-      LoadDocuments();
+      BtnOpenDetail_Click(sender, e);
+    }
+
+    private void MenuItemEdit_Click(object sender, RoutedEventArgs e)
+    {
+      BtnOpenEdit_Click(sender, e);
+    }
+
+    private async void MenuItemDelete_Click(object sender, RoutedEventArgs e)
+    {
+      if (dgDocuments.SelectedItem is not Document selectedDoc)
+      {
+        MessageBox.Show("Vui lòng chọn tài liệu cần xóa!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+      }
+
+      var result = MessageBox.Show(
+          $"Bạn có chắc chắn muốn xóa tài liệu '{selectedDoc.Title}' không?\nHành động này không thể hoàn tác.",
+          "Xác nhận xóa tài liệu",
+          MessageBoxButton.YesNo,
+          MessageBoxImage.Warning);
+
+      if (result == MessageBoxResult.Yes)
+      {
+        try
+        {
+          txtStatus.Text = $"Đang xóa tài liệu '{selectedDoc.Title}'...";
+          await _documentService.DeleteAsync(selectedDoc.Id);
+          MessageBox.Show("Xóa tài liệu thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show($"Xóa thất bại: {ex.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+          LoadDocuments();
+        }
+      }
     }
 
     private void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
