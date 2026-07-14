@@ -26,7 +26,8 @@
     </Style>
 
     <!-- Success (Green) Button -->
-    <Style x:Key="SuccessButtonStyle" TargetType="Button">
+    <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="TextElement.Foreground" Value="White"/>
         <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
@@ -63,7 +64,8 @@
     </Style>
 
     <!-- Danger (Red) Button -->
-    <Style x:Key="DangerButtonStyle" TargetType="Button">
+    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="TextElement.Foreground" Value="White"/>
         <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
@@ -81,7 +83,7 @@
                             CornerRadius="6"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" 
-                                          VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">

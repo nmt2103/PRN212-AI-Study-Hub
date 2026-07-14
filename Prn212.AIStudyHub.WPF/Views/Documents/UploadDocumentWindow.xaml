@@ -54,9 +54,11 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="btnBrowse" Grid.Column="0" Content="Chọn tệp" 
+                        <Button x:Name="btnBrowse" Grid.Column="0" 
                                 Style="{StaticResource ModernButtonStyle}" TabIndex="3"
-                                Width="100" Height="38" Click="BtnBrowse_Click"/>
+                                Width="100" Height="38" Click="BtnBrowse_Click">
+                            <TextBlock Text="Chọn tệp" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                        </Button>
                         <TextBlock x:Name="lblFileName" Grid.Column="1" 
                                    Text="Chưa chọn tệp (.pdf, .docx, .xlsx, .pptx, .txt, .md)" 
                                    Style="{StaticResource HintTextBlockStyle}"
@@ -77,10 +79,14 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="btnUpload" Grid.Column="0" Content="Tải Lên" Margin="0,0,6,0" Click="BtnUpload_Click" TabIndex="4"
-                        Style="{StaticResource SuccessButtonStyle}"/>
-                <Button x:Name="btnCancel" Grid.Column="1" Content="Hủy Bỏ" Margin="6,0,0,0" Click="BtnCancel_Click" TabIndex="5"
-                        Style="{StaticResource DangerButtonStyle}"/>
+                <Button x:Name="btnUpload" Grid.Column="0" Margin="0,0,6,0" Click="BtnUpload_Click" TabIndex="4"
+                        Style="{StaticResource SuccessButtonStyle}">
+                    <TextBlock Text="Tải Lên" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                </Button>
+                <Button x:Name="btnCancel" Grid.Column="1" Margin="6,0,0,0" Click="BtnCancel_Click" TabIndex="5"
+                        Style="{StaticResource DangerButtonStyle}">
+                    <TextBlock Text="Hủy Bỏ" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                </Button>
             </Grid>
         </Grid>
     </Border>

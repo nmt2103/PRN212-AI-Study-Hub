@@ -75,10 +75,14 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="btnBack" Grid.Column="0" Content="Quay Lại" Margin="0,0,6,0" Click="btnBack_click" TabIndex="4"
-                        Style="{StaticResource ModernButtonStyle}"/>
-                <Button x:Name="btnUpdateProfile" Grid.Column="1" Content="Lưu Thay Đổi" Margin="6,0,0,0" Click="btnUpdateProfile_Click" TabIndex="3"
-                        Style="{StaticResource SuccessButtonStyle}"/>
+                <Button x:Name="btnBack" Grid.Column="0" Margin="0,0,6,0" Click="btnBack_click" TabIndex="4"
+                        Style="{StaticResource ModernButtonStyle}">
+                    <TextBlock Text="Quay Lại" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                </Button>
+                <Button x:Name="btnUpdateProfile" Grid.Column="1" Margin="6,0,0,0" Click="btnUpdateProfile_Click" TabIndex="3"
+                        Style="{StaticResource SuccessButtonStyle}">
+                    <TextBlock Text="Lưu Thay Đổi" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                </Button>
             </Grid>
         </Grid>
     </Border>

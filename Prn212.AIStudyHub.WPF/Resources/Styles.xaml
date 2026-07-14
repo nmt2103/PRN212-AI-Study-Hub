@@ -162,7 +162,17 @@
 
     <!-- Base rounded-button template (internal helper, not used directly) -->
     <!-- Primary (Blue) Button -->
-    <Style x:Key="ModernButtonStyle" TargetType="Button">
+    <!-- Implicit Button Style for all buttons -->
+    <Style TargetType="Button">
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style x:Key="ModernButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="TextElement.Foreground" Value="White"/>
         <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
@@ -209,7 +219,8 @@
         <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
-    <Style x:Key="RoundedButtonStyle" TargetType="Button">
+    <Style x:Key="RoundedButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="TextElement.Foreground" Value="White"/>
         <Setter Property="Background" Value="{StaticResource AvatarBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -227,7 +238,8 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ButtonPopupStyle" TargetType="Button">
+    <Style x:Key="ButtonPopupStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="TextElement.Foreground" Value="White"/>
         <Setter Property="Background" Value="{StaticResource PopupBtnBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
@@ -239,13 +251,13 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="buttonBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"
-                            Padding="{TemplateBinding Padding}">
+                             Background="{TemplateBinding Background}"
+                             BorderBrush="{TemplateBinding BorderBrush}"
+                             BorderThickness="{TemplateBinding BorderThickness}"
+                             CornerRadius="8"
+                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" 
-                                          VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
