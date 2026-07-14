@@ -272,6 +272,16 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
+    private void BtnRowDetail_Click(object sender, RoutedEventArgs e)
+    {
+      if (sender is Button btn && btn.DataContext is Document selectedDoc)
+      {
+        var detailWindow = new Views.Documents.ViewDocumentWindow(selectedDoc.Id) { Owner = this };
+        detailWindow.ShowDialog();
+        LoadDocuments();
+      }
+    }
+
     private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
     {
       var updateWindow = new Views.Account.UpdateProfileWindow();

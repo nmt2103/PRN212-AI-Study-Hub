@@ -30,12 +30,15 @@
                     <TextBlock x:Name="lblDocMeta" Text="Định dạng tệp • Dung lượng" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0"/>
                 </StackPanel>
 
-                <!-- Tổ hợp nút tác vụ -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="btnDownload" Content="⬇ Tải Xuống" Width="110" Height="34" Margin="0,0,8,0" Click="BtnDownload_Click"
-                            Style="{StaticResource SuccessButtonStyle}" FontSize="12" FontWeight="SemiBold"/>
-                    <Button x:Name="btnClose" Content="Đóng" Width="120" Height="34" Click="BtnClose_Click"
-                            Style="{StaticResource DangerButtonStyle}" FontSize="12" FontWeight="SemiBold"/>
+                    <Button x:Name="btnDownload" Width="110" Height="34" Margin="0,0,8,0" Click="BtnDownload_Click"
+                            Style="{StaticResource SuccessButtonStyle}">
+                        <TextBlock Text="⬇ Tải Xuống" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                    </Button>
+                    <Button x:Name="btnClose" Width="120" Height="34" Click="BtnClose_Click"
+                            Style="{StaticResource DangerButtonStyle}">
+                        <TextBlock Text="Đóng" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>

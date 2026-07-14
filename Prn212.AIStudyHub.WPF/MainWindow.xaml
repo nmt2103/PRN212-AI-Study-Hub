@@ -185,8 +185,9 @@
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2.5*"/>
-                        <DataGridTemplateColumn Header="Môn học" Width="1.2*">
+                        <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="3*"/>
+                        
+                        <DataGridTemplateColumn Header="Môn học" Width="1.5*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border CornerRadius="4" 
@@ -195,42 +196,38 @@
                                             VerticalAlignment="Center" 
                                             Background="#EFF6FF">
                                         <TextBlock Text="{Binding Subject.Name}" 
-                                                    Foreground="#2563EB" 
-                                                    FontWeight="SemiBold" 
-                                                    FontSize="13"/>
+                                                   Foreground="#2563EB" 
+                                                   FontWeight="SemiBold" 
+                                                   FontSize="13"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Tên tệp" Binding="{Binding FileName}" Width="2*"/>
-                        <DataGridTemplateColumn Header="Loại" Width="0.8*">
+
+                        <DataGridTemplateColumn Header="Loại tệp" Width="1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="BadgeBorder" 
-                    CornerRadius="4" 
-                    Padding="10,4" 
-                    HorizontalAlignment="Left" 
-                    VerticalAlignment="Center" 
-                    Background="#9CA3AF">
+                                            CornerRadius="4" 
+                                            Padding="10,4" 
+                                            HorizontalAlignment="Left" 
+                                            VerticalAlignment="Center" 
+                                            Background="#9CA3AF">
                                         <TextBlock Text="{Binding FileExtension}" 
-                           Foreground="White" 
-                           FontWeight="Bold" 
-                           FontSize="13"/>
+                                                   Foreground="White" 
+                                                   FontWeight="Bold" 
+                                                   FontSize="13"/>
                                     </Border>
-
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding FileExtension}" Value=".docx">
                                             <Setter TargetName="BadgeBorder" Property="Background" Value="#3B82F6"/>
                                         </DataTrigger>
-
                                         <DataTrigger Binding="{Binding FileExtension}" Value=".pdf">
                                             <Setter TargetName="BadgeBorder" Property="Background" Value="#EF4444"/>
                                         </DataTrigger>
-
                                         <DataTrigger Binding="{Binding FileExtension}" Value=".zip">
                                             <Setter TargetName="BadgeBorder" Property="Background" Value="#10B981"/>
                                         </DataTrigger>
-
                                         <DataTrigger Binding="{Binding FileExtension}" Value=".xlsx">
                                             <Setter TargetName="BadgeBorder" Property="Background" Value="#16A34A"/>
                                         </DataTrigger>
@@ -238,8 +235,18 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Dung lượng" Binding="{Binding FileSize, StringFormat={}{0:N0} bytes}" Width="130"/>
-                        <DataGridTextColumn Header="Ngày tải" Binding="{Binding UploadedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="140"/>
+
+                        <DataGridTemplateColumn Header="Thao tác" Width="1.2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Height="26" Width="100" Click="BtnRowDetail_Click"
+                                            Style="{StaticResource ModernButtonStyle}" Padding="0" 
+                                            VerticalAlignment="Center" HorizontalAlignment="Left">
+                                        <TextBlock Text="Xem chi tiết" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 

@@ -32,8 +32,10 @@
                        TextWrapping="Wrap" Margin="0,0,0,12" Visibility="Collapsed"/>
 
             <!-- Login Submit Button -->
-            <Button x:Name="btnLogin" Content="Đăng Nhập" Height="42" TabIndex="3"
-                    Style="{StaticResource ModernButtonStyle}" FontSize="15" Click="BtnLogin_Click"/>
+            <Button x:Name="btnLogin" Height="42" TabIndex="3"
+                    Style="{StaticResource ModernButtonStyle}" Click="BtnLogin_Click">
+                <TextBlock Text="Đăng Nhập" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+            </Button>
 
             <!-- Register Link -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">

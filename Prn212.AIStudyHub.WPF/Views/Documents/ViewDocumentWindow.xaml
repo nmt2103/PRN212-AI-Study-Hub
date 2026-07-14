@@ -37,14 +37,22 @@
 
                 <!-- Các Nút Tác Vụ Dọc -->
                 <StackPanel Grid.Row="4" VerticalAlignment="Bottom">
-                    <Button x:Name="btnPreview" Content="👁 Xem Trước" Height="38" Margin="0,0,0,10" 
-                            Click="BtnPreview_Click" Style="{StaticResource ModernButtonStyle}" IsEnabled="False"/>
-                    <Button x:Name="btnDownload" Content="⬇ Tải Xuống" Height="38" Margin="0,0,0,10" 
-                            Click="BtnDownload_Click" Style="{StaticResource SuccessButtonStyle}" IsEnabled="False"/>
-                    <Button x:Name="btnEdit" Content="✏ Chỉnh Sửa" Height="38" Margin="0,0,0,10" 
-                            Click="BtnEdit_Click" Style="{StaticResource ModernButtonStyle}" IsEnabled="False"/>
-                    <Button x:Name="btnDelete" Content="🗑 Xóa Tài Liệu" Height="38" 
-                            Click="BtnDelete_Click" Style="{StaticResource DangerButtonStyle}" IsEnabled="False"/>
+                    <Button x:Name="btnPreview" Height="38" Margin="0,0,0,10" 
+                            Click="BtnPreview_Click" Style="{StaticResource ModernButtonStyle}" IsEnabled="False">
+                        <TextBlock Text="👁 Xem Trước" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                    </Button>
+                    <Button x:Name="btnDownload" Height="38" Margin="0,0,0,10" 
+                            Click="BtnDownload_Click" Style="{StaticResource SuccessButtonStyle}" IsEnabled="False">
+                        <TextBlock Text="⬇ Tải Xuống" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                    </Button>
+                    <Button x:Name="btnEdit" Height="38" Margin="0,0,0,10" 
+                            Click="BtnEdit_Click" Style="{StaticResource ModernButtonStyle}" IsEnabled="False">
+                        <TextBlock Text="✏ Chỉnh Sửa" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                    </Button>
+                    <Button x:Name="btnDelete" Height="38" 
+                            Click="BtnDelete_Click" Style="{StaticResource DangerButtonStyle}" IsEnabled="False">
+                        <TextBlock Text="🗑 Xóa Tài Liệu" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
