@@ -101,12 +101,6 @@ namespace Prn212.AIStudyHub.WPF
         LoadDocuments();
     }
 
-    private void BtnSearch_Click(object sender, RoutedEventArgs e)
-    {
-      _debounceTimer.Stop();
-      LoadDocuments();
-    }
-
     private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
