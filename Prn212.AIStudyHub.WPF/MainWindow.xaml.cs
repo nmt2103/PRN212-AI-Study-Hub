@@ -263,6 +263,15 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
+    private void MenuItemPreview_Click(object sender, RoutedEventArgs e)
+    {
+      if (dgDocuments.SelectedItem is Document selectedDoc)
+      {
+        var previewWindow = new Views.Documents.PreviewDocumentWindow(selectedDoc) { Owner = this };
+        previewWindow.ShowDialog();
+      }
+    }
+
     private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
     {
       var updateWindow = new Views.Account.UpdateProfileWindow();

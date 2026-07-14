@@ -91,6 +91,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
         // Enable action buttons
         btnDownload.IsEnabled = true;
+        btnPreview.IsEnabled = true;
 
         bool isOwner = App.CurrentUser != null && doc.UserId == App.CurrentUser.Id;
         btnEdit.Visibility = isOwner ? Visibility.Visible : Visibility.Collapsed;
@@ -123,6 +124,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       txtFileIcon.Text = "📁";
 
       btnDownload.IsEnabled = false;
+      btnPreview.IsEnabled = false;
       btnEdit.Visibility = Visibility.Collapsed;
       btnDelete.Visibility = Visibility.Collapsed;
     }
@@ -303,6 +305,15 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
 
       return $"{len:F2} {sizes[order]}";
+    }
+
+    private void BtnPreview_Click(object sender, RoutedEventArgs e)
+    {
+      if (_currentDocument != null)
+      {
+        var previewWindow = new PreviewDocumentWindow(_currentDocument) { Owner = this };
+        previewWindow.ShowDialog();
+      }
     }
   }
 }

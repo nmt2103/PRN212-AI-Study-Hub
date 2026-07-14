@@ -37,6 +37,8 @@
 
                 <!-- Các Nút Tác Vụ Dọc -->
                 <StackPanel Grid.Row="4" VerticalAlignment="Bottom">
+                    <Button x:Name="btnPreview" Content="👁 Xem Trước" Height="38" Margin="0,0,0,10" 
+                            Click="BtnPreview_Click" Style="{StaticResource ModernButtonStyle}" IsEnabled="False"/>
                     <Button x:Name="btnDownload" Content="⬇ Tải Xuống" Height="38" Margin="0,0,0,10" 
                             Click="BtnDownload_Click" Style="{StaticResource SuccessButtonStyle}" IsEnabled="False"/>
                     <Button x:Name="btnEdit" Content="✏ Chỉnh Sửa" Height="38" Margin="0,0,0,10" 
