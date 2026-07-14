@@ -64,7 +64,8 @@
 
                 <StackPanel Margin="0,0,0,20">
                     <TextBlock Text="Ngày tham gia:" Style="{StaticResource FormLabelStyle}"/>
-                    <DatePicker x:Name="dpCreateAt" Height="38" IsEnabled="False" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="txtCreatedAt" Style="{StaticResource ModernTextBoxStyle}" Height="38"
+                             IsReadOnly="True" Focusable="False"/>
                 </StackPanel>
             </StackPanel>
 

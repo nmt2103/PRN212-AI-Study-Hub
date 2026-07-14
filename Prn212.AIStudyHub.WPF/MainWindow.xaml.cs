@@ -289,8 +289,12 @@ namespace Prn212.AIStudyHub.WPF
               string header = mi.Header?.ToString() ?? string.Empty;
               if (header == "Chỉnh sửa" || header == "Xóa")
               {
-                mi.IsEnabled = isOwner;
+                mi.Visibility = isOwner ? Visibility.Visible : Visibility.Collapsed;
               }
+            }
+            else if (item is Separator sep)
+            {
+              sep.Visibility = isOwner ? Visibility.Visible : Visibility.Collapsed;
             }
           }
         }
