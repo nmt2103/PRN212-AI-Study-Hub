@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 1. Thanh tiêu đề (Header) -->
+        <!-- 1. Thanh tiêu đề -->
         <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="20,16">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.2" Direction="270"/>
@@ -61,7 +61,7 @@
             </Border>
         </Popup>
 
-        <!-- 2. Thanh công cụ (Toolbar) -->
+        <!-- 2. Thanh công cụ -->
         <Border Grid.Row="1" Background="White" Margin="20,20,20,10" Padding="16" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.05"/>
@@ -75,7 +75,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 1. TextBox Tìm kiếm có Icon và Placeholder -->
+                <!-- 1. Tìm kiếm -->
                 <Grid Grid.Column="0" Margin="0,0,12,0">
                     <!-- Ô nhập liệu chính -->
                     <TextBox x:Name="txtSearch" Height="40" TabIndex="1"
@@ -86,7 +86,7 @@
                     <TextBlock Text="🔍" Foreground="#9CA3AF" FontSize="15" 
                                VerticalAlignment="Center" Margin="12,0,0,0" IsHitTestVisible="False"/>
 
-                    <!-- Chữ mờ Placeholder -->
+                    <!-- Placeholder -->
                     <TextBlock Text="Tìm kiếm tài liệu..." Foreground="#9CA3AF" FontSize="14" 
                                VerticalAlignment="Center" Margin="38,0,10,0" IsHitTestVisible="False">
                         <TextBlock.Style>
@@ -116,7 +116,7 @@
                     <ComboBoxItem Content="Dung lượng" Tag="size"/>
                 </ComboBox>
 
-                <!-- 3. Nút Tải Lên có Icon -->
+                <!-- 3. Nút Tải Lên -->
                 <Button x:Name="btnUpload" Grid.Column="3" Width="130" Height="40" Click="BtnUpload_Click" TabIndex="4"
                         Style="{StaticResource SuccessButtonStyle}" Padding="16,0" 
                         Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand">
@@ -128,7 +128,7 @@
             </Grid>
         </Border>
 
-        <!-- 3. Danh sách tài liệu (DataGrid) -->
+        <!-- 3. Danh sách tài liệu -->
         <Border Grid.Row="2" Background="White" Margin="20,0,20,16" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.05"/>
