@@ -1,45 +1,46 @@
 <Window x:Class="Prn212.AIStudyHub.WPF.Views.Auth.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI Study Hub - Đăng nhập" Height="560" Width="430"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Background="#EEF2F7">
-    <Grid>
-        <Border Background="White" CornerRadius="14" Width="350" Padding="30,34"
-                VerticalAlignment="Center" HorizontalAlignment="Center">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="24" ShadowDepth="0" Opacity="0.14"/>
-            </Border.Effect>
-            <StackPanel>
-                <TextBlock Text="AI Study Hub" FontSize="27" FontWeight="Bold"
-                           Foreground="#1E3A8A" HorizontalAlignment="Center"/>
-                <TextBlock Text="Đăng nhập để tiếp tục" FontSize="13" Foreground="#6B7280"
-                           HorizontalAlignment="Center" Margin="0,4,0,26"/>
+        Title="AI Study Hub - Đăng Nhập" Width="420" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" 
+        Background="{StaticResource BackgroundBrush}">
+    <Border Margin="24" CornerRadius="8" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="28,32">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.08"/>
+        </Border.Effect>
+        <StackPanel>
+            <!-- Logo / Brand Header -->
+            <TextBlock Text="🎓 AI Study Hub" FontSize="26" FontWeight="Bold"
+                       Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center"/>
+            <TextBlock Text="Đăng nhập tài khoản để tiếp tục" FontSize="13" 
+                       Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,6,0,24"/>
 
-                <TextBlock Text="Email" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,5"/>
-                <TextBox x:Name="txtEmail" Height="38" VerticalContentAlignment="Center"
-                         Padding="10,0" BorderBrush="#D1D5DB"/>
-
-                <TextBlock Text="Mật khẩu" FontWeight="SemiBold" Foreground="#374151" Margin="0,16,0,5"/>
-                <PasswordBox x:Name="pwdPassword" Height="38" VerticalContentAlignment="Center"
-                             Padding="10,0" BorderBrush="#D1D5DB" KeyDown="Pwd_KeyDown"/>
-
-                <TextBlock x:Name="txtError" Foreground="#EF4444" FontSize="12"
-                           TextWrapping="Wrap" Margin="0,12,0,0" Visibility="Collapsed"/>
-
-                <Button x:Name="btnLogin" Content="Đăng nhập" Height="42" Margin="0,22,0,0"
-                        Background="#3B82F6" Foreground="White" FontSize="15" FontWeight="SemiBold"
-                        BorderThickness="0" Cursor="Hand" Click="BtnLogin_Click">
-                    <Button.Resources>
-                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style>
-                    </Button.Resources>
-                </Button>
-
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <TextBlock Text="Chưa có tài khoản? " Foreground="#6B7280"/>
-                    <TextBlock x:Name="lnkRegister" Text="Đăng ký ngay" Foreground="#3B82F6"
-                               FontWeight="SemiBold" Cursor="Hand" MouseLeftButtonUp="LnkRegister_Click"/>
-                </StackPanel>
+            <!-- Form Fields -->
+            <StackPanel Margin="0,0,0,14">
+                <TextBlock Text="Địa chỉ Email (*):" Style="{StaticResource FormLabelStyle}"/>
+                <TextBox x:Name="txtEmail" Style="{StaticResource ModernTextBoxStyle}" Height="38" TabIndex="1"/>
             </StackPanel>
-        </Border>
-    </Grid>
+
+            <StackPanel Margin="0,0,0,16">
+                <TextBlock Text="Mật khẩu (*):" Style="{StaticResource FormLabelStyle}"/>
+                <PasswordBox x:Name="pwdPassword" Style="{StaticResource ModernPasswordBoxStyle}" Height="38" TabIndex="2"
+                             KeyDown="Pwd_KeyDown"/>
+            </StackPanel>
+
+            <!-- Error message container -->
+            <TextBlock x:Name="txtError" Foreground="{StaticResource DangerBrush}" FontSize="12"
+                       TextWrapping="Wrap" Margin="0,0,0,12" Visibility="Collapsed"/>
+
+            <!-- Login Submit Button -->
+            <Button x:Name="btnLogin" Content="Đăng Nhập" Height="42" TabIndex="3"
+                    Style="{StaticResource ModernButtonStyle}" FontSize="15" Click="BtnLogin_Click"/>
+
+            <!-- Register Link -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">
+                <TextBlock Text="Chưa có tài khoản? " Foreground="{StaticResource TextMutedBrush}"/>
+                <TextBlock x:Name="lnkRegister" Text="Đăng ký ngay" Foreground="{StaticResource PrimaryBrush}"
+                           FontWeight="SemiBold" Cursor="Hand" MouseLeftButtonUp="LnkRegister_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
 </Window>
