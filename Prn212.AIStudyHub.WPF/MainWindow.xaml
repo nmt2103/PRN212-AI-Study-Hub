@@ -177,6 +177,7 @@
                     <DataGrid.ContextMenu>
                         <ContextMenu Opened="ContextMenu_Opened">
                             <MenuItem Header="Xem chi tiết" Click="BtnOpenDetail_Click" Padding="10,5"/>
+                            <MenuItem Header="Xem trước" Click="MenuItemPreview_Click" Padding="10,5"/>
                             <MenuItem Header="Tải xuống" Click="MenuItemDownload_Click" Padding="10,5"/>
                             <Separator/>
                             <MenuItem Header="Chỉnh sửa" Click="BtnOpenEdit_Click" Padding="10,5"/>
