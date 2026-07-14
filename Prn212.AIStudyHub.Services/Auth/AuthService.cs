@@ -31,7 +31,6 @@ public class AuthService
   /// </summary>
   public AppUser Register(string email, string password, string firstName, string lastName)
   {
-    // TODO (AUTH 1): tìm user theo email, so khớp mật khẩu đã HASH.
     using var context = new AistudyHubDbContext();
 
     if (context.AppUsers.Any(u => u.Email == email))

@@ -15,10 +15,8 @@ public partial class DocumentService
   public (List<Document> Items, int TotalCount) SearchDocuments(
           string? keyword = null, int? subjectId = null, int page = 1, int pageSize = 10, string? sortBy = null)
   {
-    if (page < 1)
-      page = 1;
-    if (pageSize < 1)
-      pageSize = 10;
+    page = Math.Max(1, page);
+    pageSize = Math.Max(1, pageSize);
 
     using var context = new AistudyHubDbContext();
     IQueryable<Document> query = context.Documents

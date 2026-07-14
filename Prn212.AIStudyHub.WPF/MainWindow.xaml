@@ -176,10 +176,10 @@
                     </DataGrid.RowStyle>
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Xem chi tiết" Click="MenuItemDetail_Click" Padding="10,5"/>
+                            <MenuItem Header="Xem chi tiết" Click="BtnOpenDetail_Click" Padding="10,5"/>
                             <MenuItem Header="Tải xuống" Click="MenuItemDownload_Click" Padding="10,5"/>
                             <Separator/>
-                            <MenuItem Header="Chỉnh sửa" Click="MenuItemEdit_Click" Padding="10,5"/>
+                            <MenuItem Header="Chỉnh sửa" Click="BtnOpenEdit_Click" Padding="10,5"/>
                             <MenuItem Header="Xóa" Click="MenuItemDelete_Click" Padding="10,5" Foreground="#EF4444"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
