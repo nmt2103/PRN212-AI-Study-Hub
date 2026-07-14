@@ -150,16 +150,12 @@ namespace Prn212.AIStudyHub.WPF
 
     private void BtnOpenDetail_Click(object sender, RoutedEventArgs e)
     {
-      int? selectedId = null;
       if (dgDocuments.SelectedItem is Document selectedDoc)
       {
-        selectedId = selectedDoc.Id;
+        var viewWindow = new ViewDocumentWindow(selectedDoc.Id) { Owner = this };
+        viewWindow.ShowDialog();
+        LoadDocuments(); // Tải lại danh sách sau khi quay về (nếu có xóa/sửa)
       }
-
-      var viewWindow = new ViewDocumentWindow(selectedId);
-      viewWindow.Owner = this;
-      viewWindow.ShowDialog();
-      LoadDocuments(); // Tải lại danh sách sau khi quay về (nếu có xóa/sửa)
     }
 
     private void DgDocuments_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -217,15 +213,6 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void MenuItemDetail_Click(object sender, RoutedEventArgs e)
-    {
-      BtnOpenDetail_Click(sender, e);
-    }
-
-    private void MenuItemEdit_Click(object sender, RoutedEventArgs e)
-    {
-      BtnOpenEdit_Click(sender, e);
-    }
 
     private async void MenuItemDelete_Click(object sender, RoutedEventArgs e)
     {
@@ -262,16 +249,12 @@ namespace Prn212.AIStudyHub.WPF
 
     private void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
     {
-      int? selectedId = null;
       if (dgDocuments.SelectedItem is Document selectedDoc)
       {
-        selectedId = selectedDoc.Id;
+        var editWindow = new Views.Documents.EditDocumentWindow(selectedDoc.Id) { Owner = this };
+        editWindow.ShowDialog();
+        LoadDocuments();
       }
-
-      var editWindow = new Views.Documents.EditDocumentWindow(selectedId);
-      editWindow.Owner = this;
-      editWindow.ShowDialog();
-      LoadDocuments();
     }
 
     private void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
