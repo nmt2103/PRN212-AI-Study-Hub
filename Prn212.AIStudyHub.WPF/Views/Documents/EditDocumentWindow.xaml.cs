@@ -86,6 +86,24 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
           {
             txtTitle.Text = _originalDocument.Title;
             cbSubject.SelectedValue = _originalDocument.SubjectId;
+
+            // Kiểm tra quyền sở hữu (IDOR UI safety check)
+            bool isOwner = App.CurrentUser != null && _originalDocument.UserId == App.CurrentUser.Id;
+            txtTitle.IsEnabled = isOwner;
+            cbSubject.IsEnabled = isOwner;
+            btnSave.IsEnabled = isOwner;
+            if (!isOwner)
+            {
+              txtTitle.ToolTip = "Bạn không có quyền chỉnh sửa tài liệu này vì bạn không phải người tải lên.";
+              cbSubject.ToolTip = "Bạn không có quyền chỉnh sửa tài liệu này vì bạn không phải người tải lên.";
+              btnSave.ToolTip = "Bạn không có quyền chỉnh sửa tài liệu này vì bạn không phải người tải lên.";
+            }
+            else
+            {
+              txtTitle.ToolTip = null;
+              cbSubject.ToolTip = null;
+              btnSave.ToolTip = null;
+            }
           }
           _previousSelectedDocId = selectedDoc.Id;
         }
@@ -188,11 +206,17 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         return;
       }
 
+      if (App.CurrentUser == null)
+      {
+        MessageBox.Show("Không tìm thấy thông tin tài khoản đăng nhập!", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Error);
+        return;
+      }
+
       try
       {
         btnSave.IsEnabled = false;
 
-        await _documentService.UpdateMetadataAsync(selectedDoc.Id, newTitle, selectedSubjectId);
+        await _documentService.UpdateMetadataAsync(selectedDoc.Id, newTitle, selectedSubjectId, App.CurrentUser.Id);
 
         // Hiệu ứng thành công trên nút bấm
         btnSave.Content = "Đã lưu! ✔";

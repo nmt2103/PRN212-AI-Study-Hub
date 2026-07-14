@@ -78,8 +78,21 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
         // Enable action buttons
         btnDownload.IsEnabled = true;
-        btnEdit.IsEnabled = true;
-        btnDelete.IsEnabled = true;
+
+        bool isOwner = App.CurrentUser != null && doc.UserId == App.CurrentUser.Id;
+        btnEdit.IsEnabled = isOwner;
+        btnDelete.IsEnabled = isOwner;
+
+        if (!isOwner)
+        {
+          btnEdit.ToolTip = "Bạn không có quyền sửa tài liệu này vì bạn không phải người tải lên.";
+          btnDelete.ToolTip = "Bạn không có quyền xóa tài liệu này vì bạn không phải người tải lên.";
+        }
+        else
+        {
+          btnEdit.ToolTip = null;
+          btnDelete.ToolTip = null;
+        }
       }
       catch (Exception ex)
       {
@@ -237,8 +250,14 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
           btnEdit.IsEnabled = false;
           btnDelete.IsEnabled = false;
 
+          if (App.CurrentUser == null)
+          {
+            MessageBox.Show("Không tìm thấy thông tin tài khoản đăng nhập!", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+          }
+
           // Gọi service để xóa
-          await _documentService.DeleteAsync(_currentDocument.Id);
+          await _documentService.DeleteAsync(_currentDocument.Id, App.CurrentUser.Id);
 
           MessageBox.Show("Xóa tài liệu thành công!",
                           "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);

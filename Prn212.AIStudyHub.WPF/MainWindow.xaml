@@ -175,7 +175,7 @@
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu Opened="ContextMenu_Opened">
                             <MenuItem Header="Xem chi tiết" Click="BtnOpenDetail_Click" Padding="10,5"/>
                             <MenuItem Header="Tải xuống" Click="MenuItemDownload_Click" Padding="10,5"/>
                             <Separator/>

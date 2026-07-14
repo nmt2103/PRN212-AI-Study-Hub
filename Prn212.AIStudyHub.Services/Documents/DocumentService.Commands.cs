@@ -117,7 +117,7 @@ public partial class DocumentService
     }
   }
 
-  public async Task UpdateMetadataAsync(int documentId, string title, int subjectId)
+  public async Task UpdateMetadataAsync(int documentId, string title, int subjectId, int currentUserId)
   {
     if (string.IsNullOrWhiteSpace(title))
       throw new ArgumentException("Tiêu đề tài liệu không được để trống.");
@@ -128,13 +128,16 @@ public partial class DocumentService
     if (doc == null)
       throw new KeyNotFoundException("Không tìm thấy tài liệu cần chỉnh sửa trên hệ thống.");
 
+    if (doc.UserId != currentUserId)
+      throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa tài liệu của người khác.");
+
     doc.Title = title.Trim();
     doc.SubjectId = subjectId;
 
     await context.SaveChangesAsync();
   }
 
-  public async Task DeleteAsync(int documentId)
+  public async Task DeleteAsync(int documentId, int currentUserId)
   {
     using var context = new AistudyHubDbContext();
     using var transaction = await context.Database.BeginTransactionAsync();
@@ -144,6 +147,9 @@ public partial class DocumentService
       var doc = await context.Documents.FindAsync(documentId);
       if (doc == null)
         throw new KeyNotFoundException("Không tìm thấy tài liệu cần xóa trên hệ thống.");
+
+      if (doc.UserId != currentUserId)
+        throw new UnauthorizedAccessException("Bạn không có quyền xóa tài liệu của người khác.");
 
       string fullPath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
 

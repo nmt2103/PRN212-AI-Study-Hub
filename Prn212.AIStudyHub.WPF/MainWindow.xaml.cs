@@ -230,10 +230,16 @@ namespace Prn212.AIStudyHub.WPF
 
       if (result == MessageBoxResult.Yes)
       {
+        if (App.CurrentUser == null)
+        {
+          MessageBox.Show("Không tìm thấy thông tin tài khoản đăng nhập!", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Error);
+          return;
+        }
+
         try
         {
           txtStatus.Text = $"Đang xóa tài liệu '{selectedDoc.Title}'...";
-          await _documentService.DeleteAsync(selectedDoc.Id);
+          await _documentService.DeleteAsync(selectedDoc.Id, App.CurrentUser.Id);
           MessageBox.Show("Xóa tài liệu thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
@@ -267,6 +273,28 @@ namespace Prn212.AIStudyHub.WPF
     private void btnProfile_Click(object sender, RoutedEventArgs e)
     {
       ProfilePopup.IsOpen = !ProfilePopup.IsOpen;
+    }
+
+    private void ContextMenu_Opened(object sender, RoutedEventArgs e)
+    {
+      if (dgDocuments.SelectedItem is Document selectedDoc && App.CurrentUser != null)
+      {
+        bool isOwner = selectedDoc.UserId == App.CurrentUser.Id;
+        if (sender is ContextMenu menu)
+        {
+          foreach (var item in menu.Items)
+          {
+            if (item is MenuItem mi)
+            {
+              string header = mi.Header?.ToString() ?? string.Empty;
+              if (header == "Chỉnh sửa" || header == "Xóa")
+              {
+                mi.IsEnabled = isOwner;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
