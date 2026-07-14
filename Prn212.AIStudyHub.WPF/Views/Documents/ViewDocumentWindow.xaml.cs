@@ -71,6 +71,19 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         txtSubject.Text = doc.Subject?.Name ?? "N/A";
         txtContentType.Text = doc.ContentType ?? "N/A";
 
+        // Thiết lập icon tệp tin tương ứng
+        string ext = (doc.FileExtension ?? "").ToLower();
+        txtFileIcon.Text = ext switch
+        {
+          ".pdf" => "📕",
+          ".docx" => "📘",
+          ".xlsx" => "📗",
+          ".pptx" => "📙",
+          ".txt" => "📄",
+          ".md" => "📝",
+          _ => "📁"
+        };
+
         // Hiển thị thông tin tác giả
         string authorName = $"{doc.User?.FirstName} {doc.User?.LastName}".Trim();
         string authorEmail = doc.User?.Email ?? "N/A";
@@ -80,19 +93,10 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         btnDownload.IsEnabled = true;
 
         bool isOwner = App.CurrentUser != null && doc.UserId == App.CurrentUser.Id;
+        btnEdit.Visibility = isOwner ? Visibility.Visible : Visibility.Collapsed;
+        btnDelete.Visibility = isOwner ? Visibility.Visible : Visibility.Collapsed;
         btnEdit.IsEnabled = isOwner;
         btnDelete.IsEnabled = isOwner;
-
-        if (!isOwner)
-        {
-          btnEdit.ToolTip = "Bạn không có quyền sửa tài liệu này vì bạn không phải người tải lên.";
-          btnDelete.ToolTip = "Bạn không có quyền xóa tài liệu này vì bạn không phải người tải lên.";
-        }
-        else
-        {
-          btnEdit.ToolTip = null;
-          btnDelete.ToolTip = null;
-        }
       }
       catch (Exception ex)
       {
@@ -108,18 +112,19 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     private void ClearDocumentDetail()
     {
       _currentDocument = null;
-      txtTitle.Clear();
-      txtFileName.Clear();
-      txtFileSize.Clear();
-      txtFileExtension.Clear();
-      txtUploadedDate.Clear();
-      txtSubject.Clear();
-      txtContentType.Clear();
-      txtAuthor.Clear();
+      txtTitle.Text = string.Empty;
+      txtFileName.Text = string.Empty;
+      txtFileSize.Text = string.Empty;
+      txtFileExtension.Text = string.Empty;
+      txtUploadedDate.Text = string.Empty;
+      txtSubject.Text = string.Empty;
+      txtContentType.Text = string.Empty;
+      txtAuthor.Text = string.Empty;
+      txtFileIcon.Text = "📁";
 
       btnDownload.IsEnabled = false;
-      btnEdit.IsEnabled = false;
-      btnDelete.IsEnabled = false;
+      btnEdit.Visibility = Visibility.Collapsed;
+      btnDelete.Visibility = Visibility.Collapsed;
     }
 
     /// <summary>

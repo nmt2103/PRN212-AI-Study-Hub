@@ -1,4 +1,4 @@
-﻿using Prn212.AIStudyHub.DataAccess;
+using Prn212.AIStudyHub.DataAccess;
 using Prn212.AIStudyHub.Services.Auth;
 using System.Windows;
 
@@ -30,7 +30,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Account
         txtEmail.Text = user.Email;
         txtFirstName.Text = user.FirstName;
         txtLastName.Text = user.LastName;
-        dpCreateAt.SelectedDate = user.CreatedAt;
+        txtCreatedAt.Text = user.CreatedAt.ToString("dd/MM/yyyy");
       }
       catch (Exception ex)
       {

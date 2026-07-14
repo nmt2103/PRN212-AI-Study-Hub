@@ -5,63 +5,83 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF.Views"
         mc:Ignorable="d"
-        Title="Upload Tài Liệu Mới" Height="480" Width="450"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
+        Title="Tải Lên Tài Liệu Mới" Width="460" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="{StaticResource BackgroundBrush}">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Border Margin="16" CornerRadius="8" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="20">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.08"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Đăng Tải Tài Liệu Học Tập" 
-                   Style="{StaticResource SubHeaderTextBlockStyle}"
-                   Margin="0,0,0,20"/>
+            <!-- 1. Tiêu đề -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Tải Lên Tài Liệu" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SecondaryBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Separator Margin="0,10,0,0" Background="#E5E7EB"/>
+            </StackPanel>
 
-        <StackPanel Grid.Row="1" VerticalAlignment="Top">
-            
-            <TextBlock Text="Tiêu đề tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
-            <TextBox x:Name="txtTitle" Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
+            <!-- 2. Form Nhập Liệu -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Top">
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Tiêu đề tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
+                    <TextBox x:Name="txtTitle" Style="{StaticResource ModernTextBoxStyle}" Height="38" TabIndex="1"/>
+                </StackPanel>
 
-            <TextBlock Text="Chọn môn học (*):" Style="{StaticResource FormLabelStyle}"/>
-            <ComboBox x:Name="cbSubject" Style="{StaticResource ModernComboBoxStyle}" Margin="0,0,0,15"
-                      DisplayMemberPath="Name" SelectedValuePath="Id"/>
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Chọn môn học (*):" Style="{StaticResource FormLabelStyle}"/>
+                    <ComboBox x:Name="cbSubject" Style="{StaticResource PillComboBoxStyle}" Height="38" TabIndex="2"
+                              DisplayMemberPath="Name" SelectedValuePath="Id"/>
+                </StackPanel>
 
-            <TextBlock Text="Người tải lên:" Style="{StaticResource FormLabelStyle}"/>
-            <TextBox x:Name="txtUserDisplayName" Style="{StaticResource ModernTextBoxStyle}" 
-                     Margin="0,0,0,15" IsReadOnly="True" Focusable="False"/>
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Người tải lên:" Style="{StaticResource FormLabelStyle}"/>
+                    <TextBox x:Name="txtUserDisplayName" Style="{StaticResource ModernTextBoxStyle}" Height="38"
+                             IsReadOnly="True" Focusable="False"/>
+                </StackPanel>
 
-            <TextBlock Text="Chọn tệp tin tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
-            <Grid Margin="0,0,0,15">
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Chọn tệp tin tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="btnBrowse" Grid.Column="0" Content="Chọn tệp" 
+                                Style="{StaticResource ModernButtonStyle}" TabIndex="3"
+                                Width="100" Height="38" Click="BtnBrowse_Click"/>
+                        <TextBlock x:Name="lblFileName" Grid.Column="1" 
+                                   Text="Chưa chọn tệp (.pdf, .docx, .xlsx, .pptx, .txt, .md)" 
+                                   Style="{StaticResource HintTextBlockStyle}"
+                                   VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 3. Tiến trình tải lên -->
+            <StackPanel Grid.Row="2" x:Name="spProgress" Visibility="Collapsed" Margin="0,0,0,16">
+                <TextBlock Text="Đang xử lý tải lên..." Style="{StaticResource HintTextBlockStyle}" Margin="0,0,0,6"/>
+                <ProgressBar x:Name="pbUpload" Style="{StaticResource ModernProgressBarStyle}" Height="6" IsIndeterminate="True"/>
+            </StackPanel>
+
+            <!-- 4. Nút Hành Động -->
+            <Grid Grid.Row="3" Height="38">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="btnBrowse" Grid.Column="0" Content="Chọn tệp" 
-                        Style="{StaticResource ModernButtonStyle}"
-                        Width="100" Height="34" FontSize="13"
-                        Click="BtnBrowse_Click"/>
-                <TextBlock x:Name="lblFileName" Grid.Column="1" 
-                           Text="Chưa chọn tệp nào (.pdf, .docx, .xlsx, .pptx, .txt, .md)" 
-                           Style="{StaticResource HintTextBlockStyle}"
-                           VerticalAlignment="Center" Margin="10,0,0,0" TextTrimming="CharacterEllipsis"/>
+                <Button x:Name="btnUpload" Grid.Column="0" Content="Tải Lên" Margin="0,0,6,0" Click="BtnUpload_Click" TabIndex="4"
+                        Style="{StaticResource SuccessButtonStyle}"/>
+                <Button x:Name="btnCancel" Grid.Column="1" Content="Hủy Bỏ" Margin="6,0,0,0" Click="BtnCancel_Click" TabIndex="5"
+                        Style="{StaticResource DangerButtonStyle}"/>
             </Grid>
-            
-        </StackPanel>
-
-        <StackPanel Grid.Row="2" x:Name="spProgress" Visibility="Collapsed" Margin="0,0,0,15">
-            <TextBlock Text="Đang xử lý tải lên..." Style="{StaticResource HintTextBlockStyle}" Margin="0,0,0,5"/>
-            <ProgressBar x:Name="pbUpload" Style="{StaticResource ModernProgressBarStyle}" IsIndeterminate="True"/>
-        </StackPanel>
-
-        <UniformGrid Grid.Row="3" Columns="2" Rows="1" Height="38">
-            <Button x:Name="btnUpload" Content="Tải Lên" Margin="0,0,10,0" Click="BtnUpload_Click"
-                    Style="{StaticResource SuccessButtonStyle}"/>
-            <Button x:Name="btnCancel" Content="Hủy Bỏ" Margin="10,0,0,0" Click="BtnCancel_Click"
-                    Style="{StaticResource DangerButtonStyle}"/>
-        </UniformGrid>
-    </Grid>
+        </Grid>
+    </Border>
 </Window>
