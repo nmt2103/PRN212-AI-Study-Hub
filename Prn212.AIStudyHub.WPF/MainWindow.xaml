@@ -4,7 +4,7 @@
         xmlns:local="clr-namespace:Prn212.AIStudyHub.WPF"
         Title="AI Study Hub - Trang Chủ" Height="700" Width="1100"
         WindowStartupLocation="CenterScreen"
-        Background="#F4F6F8">
+        Background="{StaticResource BackgroundBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -22,7 +22,7 @@
             <Grid>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="AI Study Hub" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="Hệ thống quản lý tài liệu học tập" FontSize="14" Foreground="#D1D5DB"
+                    <TextBlock Text="Hệ thống quản lý tài liệu học tập" FontSize="14" Foreground="{StaticResource TextLightMutedBrush}"
                                VerticalAlignment="Center" Margin="16,0,0,0"/>
                 </StackPanel>
 
@@ -30,8 +30,8 @@
                     <TextBlock x:Name="txtWelcome" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0" FontWeight="SemiBold" FontSize="14"/>
 
                     <!-- Nút Profile -->
-                    <Border BorderThickness="1.5" BorderBrush="#60A5FA" CornerRadius="18" Background="#1E3A8A">
-                        <Button x:Name="btnProfile" Click="btnProfile_Click" Width="110" Height="36"
+                    <Border BorderThickness="1.5" BorderBrush="{StaticResource BorderLightBrush}" CornerRadius="18" Background="{StaticResource SecondaryBrush}">
+                        <Button x:Name="btnProfile" Click="btnProfile_Click" Width="110" Height="36" TabIndex="6"
                                 Style="{StaticResource RoundedButtonStyle}" Background="Transparent" BorderBrush="Transparent">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="👤" Foreground="White" FontSize="14"/>
@@ -78,7 +78,7 @@
                 <!-- 1. TextBox Tìm kiếm có Icon và Placeholder -->
                 <Grid Grid.Column="0" Margin="0,0,12,0">
                     <!-- Ô nhập liệu chính -->
-                    <TextBox x:Name="txtSearch" Height="40"
+                    <TextBox x:Name="txtSearch" Height="40" TabIndex="1"
                              Style="{StaticResource ModernTextBoxStyle}"
                              KeyDown="TxtSearch_KeyDown" TextChanged="TxtSearch_TextChanged"
                              Padding="36,0,12,0" FontSize="14" VerticalContentAlignment="Center"/>
@@ -103,12 +103,12 @@
                 </Grid>
 
                 <!-- 2. Các ComboBox Bộ lọc -->
-                <ComboBox x:Name="cbSubjectFilter" Grid.Column="1" Width="180" Height="40" Margin="0,0,12,0"
+                <ComboBox x:Name="cbSubjectFilter" Grid.Column="1" Width="180" Height="40" Margin="0,0,12,0" TabIndex="2"
                           DisplayMemberPath="Name" SelectedValuePath="Id"
                           SelectionChanged="Filter_Changed"
                           Style="{StaticResource PillComboBoxStyle}"/>
 
-                <ComboBox x:Name="cbSort" Grid.Column="2" Width="160" Height="40" VerticalAlignment="Center" Margin="0,0,16,0"
+                <ComboBox x:Name="cbSort" Grid.Column="2" Width="160" Height="40" VerticalAlignment="Center" Margin="0,0,16,0" TabIndex="3"
                           SelectionChanged="Filter_Changed"
                           Style="{StaticResource PillComboBoxStyle}">
                     <ComboBoxItem Content="Mới nhất" Tag="date" IsSelected="True"/>
@@ -117,7 +117,7 @@
                 </ComboBox>
 
                 <!-- 3. Nút Tải Lên có Icon -->
-                <Button x:Name="btnUpload" Grid.Column="3" Width="130" Height="40" Click="BtnUpload_Click"
+                <Button x:Name="btnUpload" Grid.Column="3" Width="130" Height="40" Click="BtnUpload_Click" TabIndex="4"
                         Style="{StaticResource SuccessButtonStyle}" Padding="16,0" 
                         Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand">
                     <StackPanel Orientation="Horizontal">
@@ -134,7 +134,7 @@
                 <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.05"/>
             </Border.Effect>
             <Grid>
-                <DataGrid x:Name="dgDocuments" Margin="0" BorderThickness="0"
+                <DataGrid x:Name="dgDocuments" Margin="0" BorderThickness="0" TabIndex="5"
                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                           HeadersVisibility="Column" 
                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6"

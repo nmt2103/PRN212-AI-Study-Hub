@@ -18,6 +18,14 @@
     <Color x:Key="InputBackgroundColor">#FFFFFF</Color>
     <Color x:Key="DisabledBackgroundColor">#E5E7EB</Color>
     <Color x:Key="FormLabelColor">#374151</Color>
+    
+    <!-- Accent & Extra Colors -->
+    <Color x:Key="AvatarColor">#FB6F92</Color>
+    <Color x:Key="PopupBtnColor">#CCDBFD</Color>
+    <Color x:Key="PopupBtnPressedColor">#FDC500</Color>
+    <Color x:Key="BorderLightColor">#60A5FA</Color>
+    <Color x:Key="TextLightMutedColor">#D1D5DB</Color>
+    <Color x:Key="HighlightLightColor">#A7C7F3</Color>
 
     <!-- Brush Objects referencing Colors -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
@@ -35,6 +43,13 @@
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="{StaticResource InputBackgroundColor}"/>
     <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{StaticResource DisabledBackgroundColor}"/>
     <SolidColorBrush x:Key="FormLabelBrush" Color="{StaticResource FormLabelColor}"/>
+    
+    <SolidColorBrush x:Key="AvatarBrush" Color="{StaticResource AvatarColor}"/>
+    <SolidColorBrush x:Key="PopupBtnBrush" Color="{StaticResource PopupBtnColor}"/>
+    <SolidColorBrush x:Key="PopupBtnPressedBrush" Color="{StaticResource PopupBtnPressedColor}"/>
+    <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource BorderLightColor}"/>
+    <SolidColorBrush x:Key="TextLightMutedBrush" Color="{StaticResource TextLightMutedColor}"/>
+    <SolidColorBrush x:Key="HighlightLightBrush" Color="{StaticResource HighlightLightColor}"/>
 
     <!-- ================================================================== -->
     <!-- 2. Implicit Styles                                                 -->
@@ -68,7 +83,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="5"
+                            CornerRadius="6"
                             SnapsToDevicePixels="True">
                         <ScrollViewer x:Name="PART_ContentHost"
                                       Focusable="False"
@@ -160,7 +175,7 @@
     </Style>
 
     <Style x:Key="RoundedButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#fb6f92"/>
+        <Setter Property="Background" Value="{StaticResource AvatarBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="12,6"/>
@@ -168,7 +183,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}"
-                        CornerRadius="20">
+                        CornerRadius="18">
                         <ContentPresenter HorizontalAlignment="Center"
                                       VerticalAlignment="Center"/>
                     </Border>
@@ -178,7 +193,7 @@
     </Style>
 
     <Style x:Key="ButtonPopupStyle" TargetType="Button">
-        <Setter Property="Background" Value="#ccdbfd"/>
+        <Setter Property="Background" Value="{StaticResource PopupBtnBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -192,25 +207,25 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10"
+                            CornerRadius="8"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" 
                                           VerticalAlignment="Center"/>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="buttonBorder" Property="Background" Value="{StaticResource BackgroundBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="buttonBorder" Property="Background" Value="#fdc500"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="buttonBorder" Property="Opacity" Value="0.5"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource PopupBtnPressedBrush}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>
