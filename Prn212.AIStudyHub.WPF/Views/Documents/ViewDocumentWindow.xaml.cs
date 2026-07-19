@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using Prn212.AIStudyHub.DataAccess;
 using Prn212.AIStudyHub.Services.Documents;
+using Prn212.AIStudyHub.WPF.Helpers;
 using System.Windows;
 
 namespace Prn212.AIStudyHub.WPF.Views.Documents
@@ -65,24 +66,14 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         // Hiển thị thông tin chi tiết
         txtTitle.Text = doc.Title ?? "N/A";
         txtFileName.Text = doc.FileName ?? "N/A";
-        txtFileSize.Text = FormatFileSize(doc.FileSize);
+        txtFileSize.Text = DocumentDisplayHelper.FormatFileSize(doc.FileSize);
         txtFileExtension.Text = doc.FileExtension ?? "N/A";
         txtUploadedDate.Text = doc.UploadedAt.ToString("dd/MM/yyyy HH:mm:ss");
         txtSubject.Text = doc.Subject?.Name ?? "N/A";
         txtContentType.Text = doc.ContentType ?? "N/A";
 
         // Thiết lập icon tệp tin tương ứng
-        string ext = (doc.FileExtension ?? "").ToLower();
-        txtFileIcon.Text = ext switch
-        {
-          ".pdf" => "📕",
-          ".docx" => "📘",
-          ".xlsx" => "📗",
-          ".pptx" => "📙",
-          ".txt" => "📄",
-          ".md" => "📝",
-          _ => "📁"
-        };
+        txtFileIcon.Text = DocumentDisplayHelper.GetFileIcon(doc.FileExtension);
 
         // Hiển thị thông tin tác giả
         string authorName = $"{doc.User?.FirstName} {doc.User?.LastName}".Trim();
@@ -286,26 +277,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
     }
 
-    /// <summary>
-    /// Định dạng kích thước file từ bytes sang B/KB/MB/GB
-    /// </summary>
-    private string FormatFileSize(long bytes)
-    {
-      if (bytes == 0)
-        return "0 B";
 
-      string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-      double len = bytes;
-      int order = 0;
-
-      while (len >= 1024 && order < sizes.Length - 1)
-      {
-        order++;
-        len = len / 1024;
-      }
-
-      return $"{len:F2} {sizes[order]}";
-    }
 
     private void BtnPreview_Click(object sender, RoutedEventArgs e)
     {

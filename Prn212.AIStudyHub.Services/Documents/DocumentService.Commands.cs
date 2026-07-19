@@ -180,7 +180,7 @@ public partial class DocumentService
     }
   }
 
-  private static string GetSafeFullPath(string relativeStoragePath)
+  public static string GetSafeFullPath(string relativeStoragePath)
   {
     string cleanPath = relativeStoragePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
     string uploadsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "uploads"));
