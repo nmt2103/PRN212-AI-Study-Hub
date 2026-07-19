@@ -1,4 +1,6 @@
 using Prn212.AIStudyHub.DataAccess;
+using Prn212.AIStudyHub.Services.Documents;
+using Prn212.AIStudyHub.WPF.Helpers;
 using System.IO;
 using System.IO.Compression;
 using System.Windows;
@@ -31,22 +33,23 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
       // 1. Cập nhật thông tin Header
       lblDocTitle.Text = doc.Title ?? "Không có tiêu đề";
-      lblDocMeta.Text = $"{doc.FileExtension?.ToUpper() ?? "N/A"} • {FormatFileSize(doc.FileSize)}";
+      lblDocMeta.Text = $"{doc.FileExtension?.ToUpper() ?? "N/A"} • {DocumentDisplayHelper.FormatFileSize(doc.FileSize)}";
 
+      txtFileIcon.Text = DocumentDisplayHelper.GetFileIcon(doc.FileExtension);
       string ext = (doc.FileExtension ?? "").ToLower();
-      txtFileIcon.Text = ext switch
-      {
-        ".pdf" => "📕",
-        ".docx" => "📘",
-        ".xlsx" => "📗",
-        ".pptx" => "📙",
-        ".txt" => "📄",
-        ".md" => "📝",
-        _ => "📁"
-      };
 
       // 2. Định vị đường dẫn tệp tin
-      string filePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+      string filePath;
+      try
+      {
+        filePath = DocumentService.GetSafeFullPath(doc.StoragePath);
+      }
+      catch (Exception ex)
+      {
+        ShowError($"Đường dẫn tệp tin không hợp lệ: {ex.Message}");
+        return;
+      }
+
       if (!File.Exists(filePath))
       {
         ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");
@@ -109,27 +112,24 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       try
       {
-        using (var archive = ZipFile.OpenRead(filePath))
+        using var archive = ZipFile.OpenRead(filePath);
+        var entry = archive.GetEntry("word/document.xml");
+        if (entry == null)
         {
-          var entry = archive.GetEntry("word/document.xml");
-          if (entry != null)
-          {
-            using (var stream = entry.Open())
-            {
-              var doc = XDocument.Load(stream);
-              var w = (XNamespace) "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-              var paragraphs = doc.Descendants(w + "p")
-                                  .Select(p => string.Concat(p.Descendants(w + "t").Select(t => t.Value)));
-              return string.Join(Environment.NewLine + Environment.NewLine, paragraphs);
-            }
-          }
+          return "Tệp Word không chứa dữ liệu văn bản hợp lệ.";
         }
+
+        using var stream = entry.Open();
+        var doc = XDocument.Load(stream);
+        var w = (XNamespace) "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+        var paragraphs = doc.Descendants(w + "p")
+                            .Select(p => string.Concat(p.Descendants(w + "t").Select(t => t.Value)));
+        return string.Join(Environment.NewLine + Environment.NewLine, paragraphs);
       }
       catch (Exception ex)
       {
         return $"Không thể giải mã tệp Word: {ex.Message}";
       }
-      return "Tệp Word không chứa dữ liệu văn bản hợp lệ.";
     }
 
     private void ShowError(string message)
@@ -140,20 +140,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       lblErrorMessage.Text = message;
     }
 
-    private string FormatFileSize(long? bytes)
-    {
-      if (bytes == null)
-        return "0 B";
-      double size = bytes.Value;
-      string[] suffix = { "B", "KB", "MB", "GB" };
-      int index = 0;
-      while (size >= 1024 && index < suffix.Length - 1)
-      {
-        size /= 1024;
-        index++;
-      }
-      return $"{size:0.##} {suffix[index]}";
-    }
+
 
     private void BtnDownload_Click(object sender, RoutedEventArgs e)
     {
@@ -171,7 +158,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       {
         try
         {
-          string srcPath = Path.Combine(AppContext.BaseDirectory, _doc.StoragePath);
+          string srcPath = DocumentService.GetSafeFullPath(_doc.StoragePath);
           File.Copy(srcPath, saveDialog.FileName, true);
           MessageBox.Show("Tải xuống tài liệu thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }

@@ -3,7 +3,7 @@ using Prn212.AIStudyHub.Services.Documents;
 using System.IO;
 using System.Windows;
 
-namespace Prn212.AIStudyHub.WPF.Views
+namespace Prn212.AIStudyHub.WPF.Views.Documents
 {
   /// <summary>
   /// Interaction logic for UploadDocumentWindow.xaml
