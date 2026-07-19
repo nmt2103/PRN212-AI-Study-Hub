@@ -13,7 +13,7 @@ public class AccountService
     using var context = new AistudyHubDbContext();
     AppUser? user = await context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
     if (user == null)
-      throw new Exception("User doesn't exist in the system.");
+      throw new InvalidOperationException("Tài khoản không tồn tại trên hệ thống.");
     user.FirstName = firstName;
     user.LastName = lastName;
     await context.SaveChangesAsync();
@@ -24,7 +24,7 @@ public class AccountService
     using var context = new AistudyHubDbContext();
     var user = await context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
     if (user == null)
-      throw new Exception("User doesn't exist in the system.");
+      throw new InvalidOperationException("Tài khoản không tồn tại trên hệ thống.");
     return user;
   }
 

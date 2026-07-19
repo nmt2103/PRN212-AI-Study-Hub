@@ -1,6 +1,5 @@
 using Prn212.AIStudyHub.DataAccess;
 using Prn212.AIStudyHub.Services.Documents;
-using Prn212.AIStudyHub.WPF.Views;
 using Prn212.AIStudyHub.WPF.Views.Auth;
 using Prn212.AIStudyHub.WPF.Views.Documents;
 using System.Windows;
@@ -34,6 +33,14 @@ namespace Prn212.AIStudyHub.WPF
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+      UpdateWelcomeHeader();
+      LoadSubjectFilter();
+      _initialized = true;
+      LoadDocuments();
+    }
+
+    private void UpdateWelcomeHeader()
+    {
       if (App.CurrentUser != null)
       {
         txtWelcome.Text = $"Xin chào, {App.CurrentUser.LastName} {App.CurrentUser.FirstName}";
@@ -41,10 +48,6 @@ namespace Prn212.AIStudyHub.WPF
         txtProfileName.Text = $"{App.CurrentUser.LastName} {App.CurrentUser.FirstName}";
         txtProfileEmail.Text = App.CurrentUser.Email;
       }
-
-      LoadSubjectFilter();
-      _initialized = true;
-      LoadDocuments();
     }
 
     private void LoadSubjectFilter()
@@ -84,8 +87,8 @@ namespace Prn212.AIStudyHub.WPF
 
         // Hiển thị trạng thái tìm kiếm
         string searchStatus = string.IsNullOrWhiteSpace(keyword)
-            ? $"Hiển thị {items.Count} / tổng {total} tài liệu."
-            : $"Hiển thị {items.Count} / tìm thấy {total} kết quả cho '{keyword}'.";
+            ? $"Hiển thị {items?.Count ?? 0} / tổng {total} tài liệu."
+            : $"Hiển thị {items?.Count ?? 0} / tìm thấy {total} kết quả cho '{keyword}'.";
         txtStatus.Text = searchStatus;
       }
       catch (Exception ex)
@@ -287,6 +290,7 @@ namespace Prn212.AIStudyHub.WPF
       var updateWindow = new Views.Account.UpdateProfileWindow();
       updateWindow.Owner = this;
       updateWindow.ShowDialog();
+      UpdateWelcomeHeader();
     }
 
     private void btnProfile_Click(object sender, RoutedEventArgs e)

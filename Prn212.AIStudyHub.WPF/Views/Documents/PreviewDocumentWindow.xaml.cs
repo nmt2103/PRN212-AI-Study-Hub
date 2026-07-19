@@ -46,7 +46,17 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       };
 
       // 2. Định vị đường dẫn tệp tin
-      string filePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+      string filePath;
+      try
+      {
+        filePath = GetSafeFullPath(doc.StoragePath);
+      }
+      catch (Exception ex)
+      {
+        ShowError($"Đường dẫn tệp tin không hợp lệ: {ex.Message}");
+        return;
+      }
+      
       if (!File.Exists(filePath))
       {
         ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");
@@ -171,7 +181,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       {
         try
         {
-          string srcPath = Path.Combine(AppContext.BaseDirectory, _doc.StoragePath);
+          string srcPath = GetSafeFullPath(_doc.StoragePath);
           File.Copy(srcPath, saveDialog.FileName, true);
           MessageBox.Show("Tải xuống tài liệu thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -180,6 +190,16 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
           MessageBox.Show($"Lỗi khi tải xuống tài liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
       }
+    }
+
+    private string GetSafeFullPath(string relativeStoragePath)
+    {
+      string cleanPath = relativeStoragePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
+      string uploadsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "uploads"));
+      string fullPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, cleanPath));
+      if (!fullPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase))
+        throw new UnauthorizedAccessException("Đường dẫn tệp tin không hợp lệ.");
+      return fullPath;
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)

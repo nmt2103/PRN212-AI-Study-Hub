@@ -72,7 +72,7 @@ public partial class DocumentService
     if (doc == null)
       throw new FileNotFoundException("Tài liệu không tồn tại trên hệ thống");
 
-    string sourcePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+    string sourcePath = GetSafeFullPath(doc.StoragePath);
     if (!File.Exists(sourcePath))
       throw new FileNotFoundException("Không tìm thấy file gốc trên server");
 
@@ -151,7 +151,7 @@ public partial class DocumentService
       if (doc.UserId != currentUserId)
         throw new UnauthorizedAccessException("Bạn không có quyền xóa tài liệu của người khác.");
 
-      string fullPath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+      string fullPath = GetSafeFullPath(doc.StoragePath);
 
       // Xóa trong database trước
       context.Documents.Remove(doc);
@@ -178,6 +178,16 @@ public partial class DocumentService
       await transaction.RollbackAsync();
       throw;
     }
+  }
+
+  private static string GetSafeFullPath(string relativeStoragePath)
+  {
+    string cleanPath = relativeStoragePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
+    string uploadsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "uploads"));
+    string fullPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, cleanPath));
+    if (!fullPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase))
+      throw new UnauthorizedAccessException("Đường dẫn tệp tin không hợp lệ.");
+    return fullPath;
   }
 
   private static string GetContentType(string extension) => extension.ToLowerInvariant() switch
