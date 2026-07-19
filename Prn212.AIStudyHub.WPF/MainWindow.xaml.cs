@@ -47,6 +47,12 @@ namespace Prn212.AIStudyHub.WPF
         txtProfileButtonText.Text = $" {App.CurrentUser.FirstName}";
         txtProfileName.Text = $"{App.CurrentUser.LastName} {App.CurrentUser.FirstName}";
         txtProfileEmail.Text = App.CurrentUser.Email;
+
+        // Hiện nút Quản lý người dùng nếu là Admin
+        if (App.CurrentUser.Role == "Admin")
+        {
+          btnManageUsers.Visibility = Visibility.Visible;
+        }
       }
     }
 
@@ -322,6 +328,12 @@ namespace Prn212.AIStudyHub.WPF
           }
         }
       }
+    }
+
+    private void BtnManageUsers_Click(object sender, RoutedEventArgs e)
+    {
+      var manageUsersWindow = new Views.Auth.ManageUsersWindow { Owner = this };
+      manageUsersWindow.ShowDialog();
     }
   }
 }

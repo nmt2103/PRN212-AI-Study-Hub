@@ -31,7 +31,8 @@ namespace Prn212.AIStudyHub.WPF.Views.Account
     {
       try
       {
-        if (App.CurrentUser == null) return;
+        if (App.CurrentUser == null)
+          return;
         AppUser user = await _accountService.GetCurrentUser(App.CurrentUser.Email);
         txtFullName.Text = $"{user.FirstName} {user.LastName}";
         txtEmail.Text = user.Email;
@@ -47,13 +48,14 @@ namespace Prn212.AIStudyHub.WPF.Views.Account
     }
     private async void btnUpdateProfile_Click(object sender, RoutedEventArgs e)
     {
-      if (App.CurrentUser == null) return;
+      if (App.CurrentUser == null)
+        return;
       try
       {
         var email = txtEmail.Text.Trim();
         var firstName = txtFirstName.Text.Trim();
         var lastName = txtLastName.Text.Trim();
-        
+
         if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
         {
           MessageBox.Show("Họ và tên không được để trống.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -61,10 +63,10 @@ namespace Prn212.AIStudyHub.WPF.Views.Account
         }
 
         await _accountService.UpdateProfile(email, firstName, lastName);
-        
+
         // Refresh local session (C3)
         App.CurrentUser = await _accountService.GetCurrentUser(email);
-        
+
         MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         await LoadAccountProfile();
       }

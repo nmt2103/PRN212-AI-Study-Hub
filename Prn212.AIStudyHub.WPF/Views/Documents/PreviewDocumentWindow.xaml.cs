@@ -49,7 +49,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         ShowError($"Đường dẫn tệp tin không hợp lệ: {ex.Message}");
         return;
       }
-      
+
       if (!File.Exists(filePath))
       {
         ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");

@@ -19,7 +19,7 @@ public class AuthService
     if (user == null)
       return null;          // không có email này
     if (!user.IsActive)
-      return null;        // tài khoản bị khóa
+      throw new InvalidOperationException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
     if (!PasswordHasher.Verify(password, user.PasswordHash))
       return null; // sai mật khẩu
 

@@ -275,4 +275,75 @@
         </Style.Triggers>
     </Style>
 
+    <!-- ================================================================== -->
+    <!-- 7. Admin & Manage Users Styles                                     -->
+    <!-- ================================================================== -->
+
+    <Style x:Key="AdminActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+        <Setter Property="Background" Value="#6366F1"/>
+        <Setter Property="Padding" Value="16,0"/>
+        <Setter Property="Width" Value="200"/>
+        <Setter Property="Height" Value="40"/>
+    </Style>
+
+    <Style x:Key="ManageUsersStatusBorderStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Background" Value="#10B981"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                <Setter Property="Background" Value="#FEE2E2"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ManageUsersStatusTextStyle" TargetType="TextBlock">
+        <Setter Property="Text" Value="Đang hoạt động"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                <Setter Property="Text" Value="Đã khóa"/>
+                <Setter Property="Foreground" Value="#EF4444"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ManageUserToggleButtonStyle" TargetType="Button">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="#FEE2E2" CornerRadius="6" Padding="16,8">
+                        <TextBlock Text="Khóa tài khoản" Foreground="#EF4444" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="#D1FAE5" CornerRadius="6" Padding="16,8">
+                                <TextBlock Text="Mở khóa" Foreground="#10B981" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.8"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>
