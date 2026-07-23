@@ -305,11 +305,11 @@ namespace Prn212.AIStudyHub.WPF
     }
 
     private void btnResetPassword_Click(object sender, RoutedEventArgs e)
-        {
-            var resetPwWindow = new Views.Account.ResetPasswordWindow();
-            resetPwWindow.Owner = this;
-            resetPwWindow.ShowDialog();
-        }
+    {
+      var resetPwWindow = new Views.Account.ResetPasswordWindow { Owner = this };
+      resetPwWindow.ShowDialog();
+    }
+
     private void ContextMenu_Opened(object sender, RoutedEventArgs e)
     {
       if (dgDocuments.SelectedItem is Document selectedDoc && App.CurrentUser != null)
