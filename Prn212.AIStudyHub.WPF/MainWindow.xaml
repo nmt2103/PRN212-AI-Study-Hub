@@ -54,7 +54,7 @@
                     <TextBlock x:Name="txtProfileEmail" Text="user@gmail.com" FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,16"/>
 
                     <Button Name="btnUpdateProfile" Content="Hồ sơ của tôi" Margin="0,0,0,6" Click="btnUpdateProfile_Click" Style="{StaticResource ButtonPopupStyle}"/>
-                    <Button Content="Đổi mật khẩu" Margin="0,0,0,6" Style="{StaticResource ButtonPopupStyle}"/>
+                    <Button Name="btnResetPassword" Content="Đổi mật khẩu" Margin="0,0,0,6" Click="btnResetPassword_Click" Style="{StaticResource ButtonPopupStyle}"/>
                     <Separator Margin="0,6" Background="#E5E7EB"/>
                     <Button Content="Đăng xuất" Margin="0,6,0,0" Click="BtnLogout_Click" Style="{StaticResource ButtonPopupStyle}" Foreground="#EF4444"/>
                 </StackPanel>

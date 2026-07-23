@@ -28,10 +28,22 @@ public class AccountService
     return user;
   }
 
-  public void RequestPasswordReset(string email)
+  public async Task RequestPasswordReset(string email, string newPassword, string currentPassword)
   {
-    // TODO (AUTH 2): sinh token, gửi email.
-    throw new NotImplementedException("Nhóm AUTH cài đặt RequestPasswordReset tại đây.");
+    using var context = new AistudyHubDbContext();
+    var user = await context.AppUsers.FirstOrDefaultAsync(e => e.Email.Equals(email));
+    if (user == null)
+      throw new InvalidOperationException("Tài khoản không tồn tại trên hệ thống.");
+
+    if (newPassword.Equals(currentPassword))
+      throw new InvalidOperationException("Mật khẩu mới không được trùng mật khẩu cũ");
+
+    if (!PasswordHasher.Verify(currentPassword, user.PasswordHash))
+      throw new InvalidOperationException("Mật khẩu không khớp dưới hệ thống");
+
+    user.PasswordHash = PasswordHasher.Hash(newPassword);
+    await context.SaveChangesAsync();
+
   }
 
   public void ResetPassword(string email, string token, string newPassword)

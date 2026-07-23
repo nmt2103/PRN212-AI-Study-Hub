@@ -9,11 +9,10 @@ namespace Prn212.AIStudyHub.WPF.Views.Account
   /// </summary>
   public partial class UpdateProfileWindow : Window
   {
-    private readonly AccountService _accountService;
+    private readonly AccountService _accountService = new();
     public UpdateProfileWindow()
     {
       InitializeComponent();
-      _accountService = new();
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -27,7 +26,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Account
       await LoadAccountProfile();
     }
 
-    public async Task LoadAccountProfile()
+    private async Task LoadAccountProfile()
     {
       try
       {
