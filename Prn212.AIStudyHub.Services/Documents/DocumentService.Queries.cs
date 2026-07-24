@@ -13,7 +13,7 @@ public partial class DocumentService
   /// Tìm kiếm tài liệu theo keyword trên name, subject name, subject description
   /// </summary>
   public (List<Document> Items, int TotalCount) SearchDocuments(
-          string? keyword = null, int? subjectId = null, int page = 1, int pageSize = 10, string? sortBy = null)
+          string? keyword = null, int? subjectId = null, int? userId = null, int page = 1, int pageSize = 10, string? sortBy = null)
   {
     page = Math.Max(1, page);
     pageSize = Math.Max(1, pageSize);
@@ -37,6 +37,11 @@ public partial class DocumentService
     if (subjectId.HasValue && subjectId.Value != -1)
     {
       query = query.Where(d => d.SubjectId == subjectId.Value);
+    }
+
+    if (userId.HasValue)
+    {
+      query = query.Where(d => d.UserId == userId.Value);
     }
 
     query = sortBy switch

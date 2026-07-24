@@ -78,8 +78,14 @@ namespace Prn212.AIStudyHub.WPF
 
         string? sortBy = (cbSort.SelectedItem as ComboBoxItem)?.Tag?.ToString();
 
+        int? userId = null;
+        if (cbMyDocs?.IsChecked == true && App.CurrentUser != null)
+        {
+          userId = App.CurrentUser.Id;
+        }
+
         // Tìm kiếm trên: Title, Subject Name, Subject Description
-        var (items, total) = _documentService.SearchDocuments(keyword, subjectId, 1, 200, sortBy);
+        var (items, total) = _documentService.SearchDocuments(keyword, subjectId, userId, 1, 200, sortBy);
         dgDocuments.ItemsSource = items;
 
         if (items == null || items.Count == 0)
@@ -104,7 +110,7 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void Filter_Changed(object sender, SelectionChangedEventArgs e)
+    private void Filter_Changed(object sender, RoutedEventArgs e)
     {
       if (_initialized)
         LoadDocuments();
