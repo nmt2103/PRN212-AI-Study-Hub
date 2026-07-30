@@ -49,17 +49,22 @@
 
                 <StackPanel Margin="0,0,0,16">
                     <TextBlock Text="Chọn tệp tin tài liệu (*):" Style="{StaticResource FormLabelStyle}"/>
+                    <StackPanel Margin="0,0,0,4">
+                        <CheckBox x:Name="chkUploadToCloud" Content="☁ Lưu trữ trên Cloudinary"
+                              FontSize="13" Foreground="{StaticResource TextBrush}"/>
+                    </StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="13.774"/>
+                            <ColumnDefinition Width="86.226"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button x:Name="btnBrowse" Grid.Column="0" 
                                 Style="{StaticResource ModernButtonStyle}" TabIndex="3"
-                                Width="100" Height="38" Click="BtnBrowse_Click">
+                                Width="100" Height="38" Click="BtnBrowse_Click" Grid.ColumnSpan="2">
                             <TextBlock Text="Chọn tệp" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
                         </Button>
-                        <TextBlock x:Name="lblFileName" Grid.Column="1" 
+                        <TextBlock x:Name="lblFileName" Grid.Column="2" 
                                    Text="Chưa chọn tệp (.pdf, .docx, .xlsx, .pptx, .txt, .md)" 
                                    Style="{StaticResource HintTextBlockStyle}"
                                    VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis"/>

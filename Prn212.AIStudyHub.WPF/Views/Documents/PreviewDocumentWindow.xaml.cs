@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Windows;
 using System.Windows.Documents;
 using System.Xml.Linq;
+using System.Net.Http;
 
 namespace Prn212.AIStudyHub.WPF.Views.Documents
 {
@@ -16,99 +17,117 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
   {
     private readonly Document _doc;
 
-    public PreviewDocumentWindow(Document doc)
-    {
-      InitializeComponent();
-      _doc = doc;
-      LoadDocument(doc);
-    }
-
-    private void LoadDocument(Document doc)
-    {
-      if (doc == null)
-      {
-        ShowError("Không tìm thấy thông tin tài liệu.");
-        return;
-      }
-
-      // 1. Cập nhật thông tin Header
-      lblDocTitle.Text = doc.Title ?? "Không có tiêu đề";
-      lblDocMeta.Text = $"{doc.FileExtension?.ToUpper() ?? "N/A"} • {DocumentDisplayHelper.FormatFileSize(doc.FileSize)}";
-
-      txtFileIcon.Text = DocumentDisplayHelper.GetFileIcon(doc.FileExtension);
-      string ext = (doc.FileExtension ?? "").ToLower();
-
-      // 2. Định vị đường dẫn tệp tin
-      string filePath;
-      try
-      {
-        filePath = DocumentService.GetSafeFullPath(doc.StoragePath);
-      }
-      catch (Exception ex)
-      {
-        ShowError($"Đường dẫn tệp tin không hợp lệ: {ex.Message}");
-        return;
-      }
-
-      if (!File.Exists(filePath))
-      {
-        ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");
-        return;
-      }
-
-      // 3. Xử lý hiển thị theo định dạng
-      try
-      {
-        if (ext == ".pdf")
+        public PreviewDocumentWindow(Document doc)
         {
-          pdfBorder.Visibility = Visibility.Visible;
-          textViewerContainer.Visibility = Visibility.Collapsed;
-          errorPanel.Visibility = Visibility.Collapsed;
-
-          pdfViewer.Navigate(new Uri(filePath));
+            InitializeComponent();
+            _doc = doc;
+            _ = LoadDocumentAsync(doc);
         }
-        else if (ext == ".txt" || ext == ".md")
+
+        private async Task LoadDocumentAsync(Document doc)
         {
-          textViewerContainer.Visibility = Visibility.Visible;
-          pdfBorder.Visibility = Visibility.Collapsed;
-          errorPanel.Visibility = Visibility.Collapsed;
-
-          string content = File.ReadAllText(filePath);
-          flowDoc.Blocks.Clear();
-          var p = new Paragraph(new Run(content)) { LineHeight = 24 };
-          flowDoc.Blocks.Add(p);
-        }
-        else if (ext == ".docx")
-        {
-          textViewerContainer.Visibility = Visibility.Visible;
-          pdfBorder.Visibility = Visibility.Collapsed;
-          errorPanel.Visibility = Visibility.Collapsed;
-
-          string content = ExtractTextFromDocx(filePath);
-          flowDoc.Blocks.Clear();
-
-          var paragraphs = content.Split(new[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.None);
-          foreach (var paraText in paragraphs)
-          {
-            if (!string.IsNullOrWhiteSpace(paraText))
+            if (doc == null)
             {
-              var p = new Paragraph(new Run(paraText.Trim())) { Margin = new Thickness(0, 0, 0, 12), LineHeight = 24 };
-              flowDoc.Blocks.Add(p);
+                ShowError("Không tìm thấy thông tin tài liệu.");
+                return;
             }
-          }
-        }
-        else
-        {
-          ShowError($"Định dạng tệp tin {doc.FileExtension} không hỗ trợ xem trực tiếp.\nVui lòng tải xuống máy tính để xem.");
-        }
-      }
-      catch (Exception ex)
-      {
-        ShowError($"Lỗi hệ thống khi tải tệp tin xem trước:\n{ex.Message}");
-      }
-    }
 
-    private string ExtractTextFromDocx(string filePath)
+            // 1. Cập nhật thông tin Header
+            lblDocTitle.Text = doc.Title ?? "Không có tiêu đề";
+            lblDocMeta.Text = $"{doc.FileExtension?.ToUpper() ?? "N/A"} • {DocumentDisplayHelper.FormatFileSize(doc.FileSize)}";
+            string ext = (doc.FileExtension ?? "").ToLower();
+            txtFileIcon.Text = ext switch
+            {
+                ".pdf" => "📕",
+                ".docx" => "📘",
+                ".xlsx" => "📗",
+                ".pptx" => "📙",
+                ".txt" => "📄",
+                ".md" => "📝",
+                _ => "📁"
+            };
+
+            // 2. Định vị đường dẫn tệp tin (local hoặc tải tạm từ Cloudinary)
+            string filePath;
+
+            if (doc.IsCloudStored)
+            {
+                try
+                {
+                    filePath = Path.Combine(Path.GetTempPath(), $"preview_{Guid.NewGuid()}{doc.FileExtension}");
+                    using var httpClient = new HttpClient();
+                    var bytes = await httpClient.GetByteArrayAsync(doc.StoragePath);
+                    await File.WriteAllBytesAsync(filePath, bytes);
+                }
+                catch (Exception ex)
+                {
+                    ShowError($"Không thể tải tệp từ Cloudinary để xem trước:\n{ex.Message}");
+                    return;
+                }
+            }
+            else
+            {
+                filePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+                if (!File.Exists(filePath))
+                {
+                    ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");
+                    return;
+                }
+            }
+
+            // 3. Xử lý hiển thị theo định dạng
+            try
+            {
+                if (ext == ".pdf")
+                {
+                    pdfBorder.Visibility = Visibility.Visible;
+                    textViewerContainer.Visibility = Visibility.Collapsed;
+                    errorPanel.Visibility = Visibility.Collapsed;
+
+                    pdfViewer.Navigate(new Uri(filePath));
+                }
+                else if (ext == ".txt" || ext == ".md")
+                {
+                    textViewerContainer.Visibility = Visibility.Visible;
+                    pdfBorder.Visibility = Visibility.Collapsed;
+                    errorPanel.Visibility = Visibility.Collapsed;
+
+                    string content = File.ReadAllText(filePath);
+                    flowDoc.Blocks.Clear();
+                    var p = new Paragraph(new Run(content)) { LineHeight = 24 };
+                    flowDoc.Blocks.Add(p);
+                }
+                else if (ext == ".docx")
+                {
+                    textViewerContainer.Visibility = Visibility.Visible;
+                    pdfBorder.Visibility = Visibility.Collapsed;
+                    errorPanel.Visibility = Visibility.Collapsed;
+
+                    string content = ExtractTextFromDocx(filePath);
+                    flowDoc.Blocks.Clear();
+
+                    var paragraphs = content.Split(new[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.None);
+                    foreach (var paraText in paragraphs)
+                    {
+                        if (!string.IsNullOrWhiteSpace(paraText))
+                        {
+                            var p = new Paragraph(new Run(paraText.Trim())) { Margin = new Thickness(0, 0, 0, 12), LineHeight = 24 };
+                            flowDoc.Blocks.Add(p);
+                        }
+                    }
+                }
+                else
+                {
+                    ShowError($"Định dạng tệp tin {doc.FileExtension} không hỗ trợ xem trực tiếp.\nVui lòng tải xuống máy tính để xem.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Lỗi hệ thống khi tải tệp tin xem trước:\n{ex.Message}");
+            }
+        }
+
+        private string ExtractTextFromDocx(string filePath)
     {
       try
       {
@@ -142,34 +161,43 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
 
 
-    private void BtnDownload_Click(object sender, RoutedEventArgs e)
-    {
-      if (_doc == null)
-        return;
-
-      var saveDialog = new Microsoft.Win32.SaveFileDialog
-      {
-        FileName = _doc.FileName,
-        Filter = $"Tệp tin (*{_doc.FileExtension})|*{_doc.FileExtension}|Tất cả tệp tin (*.*)|*.*",
-        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
-      };
-
-      if (saveDialog.ShowDialog() == true)
-      {
-        try
+        private async void BtnDownload_Click(object sender, RoutedEventArgs e)
         {
-          string srcPath = DocumentService.GetSafeFullPath(_doc.StoragePath);
-          File.Copy(srcPath, saveDialog.FileName, true);
-          MessageBox.Show("Tải xuống tài liệu thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show($"Lỗi khi tải xuống tài liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-      }
-    }
+            if (_doc == null)
+                return;
 
-    private void BtnClose_Click(object sender, RoutedEventArgs e)
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = _doc.FileName,
+                Filter = $"Tệp tin (*{_doc.FileExtension})|*{_doc.FileExtension}|Tất cả tệp tin (*.*)|*.*",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    if (_doc.IsCloudStored)
+                    {
+                        using var httpClient = new HttpClient();
+                        var bytes = await httpClient.GetByteArrayAsync(_doc.StoragePath);
+                        await File.WriteAllBytesAsync(saveDialog.FileName, bytes);
+                    }
+                    else
+                    {
+                        string srcPath = Path.Combine(AppContext.BaseDirectory, _doc.StoragePath);
+                        File.Copy(srcPath, saveDialog.FileName, true);
+                    }
+                    MessageBox.Show("Tải xuống tài liệu thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi tải xuống tài liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
     {
       this.Close();
     }

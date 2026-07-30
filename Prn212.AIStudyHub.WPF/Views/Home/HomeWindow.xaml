@@ -1,0 +1,81 @@
+﻿<Window x:Class="Prn212.AIStudyHub.WPF.Views.Home.HomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AI Study Hub - Trang Chủ" Width="820" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}">
+    <Border Margin="24" CornerRadius="10" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.1"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Hero band -->
+            <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" CornerRadius="10,10,0,0" Padding="40,44">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="🎓 AI Study Hub" FontSize="34" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Nơi lưu trữ, tìm kiếm và quản lý tài liệu học tập thông minh"
+                               FontSize="15" Foreground="#D1D5DB" HorizontalAlignment="Center"
+                               Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="520"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Body -->
+            <StackPanel Grid.Row="1" Margin="40,32,40,40">
+
+                <!-- Feature highlights -->
+                <Grid Margin="0,0,0,32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="📚" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Quản lý tài liệu" FontWeight="SemiBold" FontSize="14"
+                                   HorizontalAlignment="Center" TextAlignment="Center" Margin="0,8,0,4"/>
+                        <TextBlock Text="Tải lên, phân loại theo môn học và tìm kiếm nhanh chóng."
+                                   FontSize="12" Foreground="{StaticResource TextMutedBrush}"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="12,0,12,0">
+                        <TextBlock Text="☁️" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Lưu trữ đám mây" FontWeight="SemiBold" FontSize="14"
+                                   HorizontalAlignment="Center" TextAlignment="Center" Margin="0,8,0,4"/>
+                        <TextBlock Text="Đồng bộ tài liệu lên Cloudinary, truy cập ở bất kỳ đâu."
+                                   FontSize="12" Foreground="{StaticResource TextMutedBrush}"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                        <TextBlock Text="🔒" FontSize="28" HorizontalAlignment="Center"/>
+                        <TextBlock Text="An toàn &amp; riêng tư" FontWeight="SemiBold" FontSize="14"
+                                   HorizontalAlignment="Center" TextAlignment="Center" Margin="0,8,0,4"/>
+                        <TextBlock Text="Mỗi tài khoản chỉ quản lý tài liệu của riêng mình."
+                                   FontSize="12" Foreground="{StaticResource TextMutedBrush}"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- CTA -->
+                <Button x:Name="btnGetStarted" Height="46" Style="{StaticResource ModernButtonStyle}"
+                        Click="BtnGetStarted_Click">
+                    <TextBlock Text="Bắt Đầu Ngay →" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                </Button>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
+                    <TextBlock Text="Chưa có tài khoản? " Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBlock x:Name="lnkRegister" Text="Đăng ký ngay" Foreground="{StaticResource PrimaryBrush}"
+                               FontWeight="SemiBold" Cursor="Hand" MouseLeftButtonUp="LnkRegister_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

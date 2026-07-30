@@ -96,13 +96,14 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       {
         SetUiEnabledState(false);
 
-        await _documentService.UploadAsync(
-            App.CurrentUser.Id,
-            (int) cbSubject.SelectedValue,
-            txtTitle.Text.Trim(),
-            _selectedFilePath);
+                await _documentService.UploadAsync(
+                    App.CurrentUser.Id,
+                    (int)cbSubject.SelectedValue,
+                    txtTitle.Text.Trim(),
+                    _selectedFilePath,
+                    chkUploadToCloud.IsChecked == true);
 
-        MessageBox.Show("Tải tài liệu lên và lưu thông tin thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Tải tài liệu lên và lưu thông tin thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         this.Close();
       }
       catch (Exception ex)
