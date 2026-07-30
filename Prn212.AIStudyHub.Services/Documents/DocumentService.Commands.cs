@@ -103,16 +103,7 @@ public partial class DocumentService
     catch
     {
       if (File.Exists(destinationFilePath))
-      {
-        try
-        {
-          File.Delete(destinationFilePath);
-        }
-        catch
-        {
-          // Bỏ qua lỗi xóa tệp khi đang xử lý ngoại lệ
-        }
-      }
+        File.Delete(destinationFilePath);
       throw;
     }
   }
