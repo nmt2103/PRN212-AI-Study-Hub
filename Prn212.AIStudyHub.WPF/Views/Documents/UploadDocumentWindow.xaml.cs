@@ -2,7 +2,6 @@ using Microsoft.Win32;
 using Prn212.AIStudyHub.Services.Documents;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace Prn212.AIStudyHub.WPF.Views.Documents
 {
@@ -21,21 +20,21 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       this.Loaded += UploadDocumentWindow_Loaded;
     }
 
-    private void UploadDocumentWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void UploadDocumentWindow_Loaded(object sender, RoutedEventArgs e)
     {
       try
       {
-        LoadComboBoxData();
-        
+        await LoadComboBoxDataAsync();
+
         // Show Admin tab if current user is Admin
         if (App.CurrentUser?.Role == "Admin")
         {
-            tabAddSubject.Visibility = Visibility.Visible;
+          tabAddSubject.Visibility = Visibility.Visible;
         }
         else
         {
-            // Fully remove or collapse the tab for non-admins
-            tabAddSubject.Visibility = Visibility.Collapsed;
+          // Fully remove or collapse the tab for non-admins
+          tabAddSubject.Visibility = Visibility.Collapsed;
         }
       }
       catch (Exception ex)
@@ -45,9 +44,9 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
     }
 
-    private void LoadComboBoxData()
+    private async Task LoadComboBoxDataAsync()
     {
-      var subjects = _documentService.GetAllSubjects();
+      var subjects = await _documentService.GetAllSubjectsAsync();
       cbSubject.ItemsSource = subjects;
       if (subjects.Any())
         cbSubject.SelectedIndex = 0;
@@ -128,39 +127,39 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
     private async void BtnSaveSubject_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            string name = txtSubjectName.Text.Trim();
-            string description = txtSubjectDescription.Text.Trim();
+      try
+      {
+        string name = txtSubjectName.Text.Trim();
+        string description = txtSubjectDescription.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                MessageBox.Show("Vui lòng nhập tên môn học.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            btnSaveSubject.IsEnabled = false;
-            await _documentService.AddSubjectAsync(name, description);
-            
-            MessageBox.Show("Thêm môn học thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-            SubjectAdded = true;
-            
-            // Reload subjects in tab 1
-            LoadComboBoxData();
-            
-            // Clear inputs
-            txtSubjectName.Text = string.Empty;
-            txtSubjectDescription.Text = string.Empty;
-            
-            // Switch back to Tab 1
-            tabControl.SelectedIndex = 0;
-            btnSaveSubject.IsEnabled = true;
-        }
-        catch (Exception ex)
+        if (string.IsNullOrWhiteSpace(name))
         {
-            MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            btnSaveSubject.IsEnabled = true;
+          MessageBox.Show("Vui lòng nhập tên môn học.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+          return;
         }
+
+        btnSaveSubject.IsEnabled = false;
+        await _documentService.AddSubjectAsync(name, description);
+
+        MessageBox.Show("Thêm môn học thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        SubjectAdded = true;
+
+        // Reload subjects in tab 1
+        await LoadComboBoxDataAsync();
+
+        // Clear inputs
+        txtSubjectName.Text = string.Empty;
+        txtSubjectDescription.Text = string.Empty;
+
+        // Switch back to Tab 1
+        tabControl.SelectedIndex = 0;
+        btnSaveSubject.IsEnabled = true;
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        btnSaveSubject.IsEnabled = true;
+      }
     }
 
     private void SetUiEnabledState(bool isEnabled)

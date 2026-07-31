@@ -1,5 +1,5 @@
+using Microsoft.EntityFrameworkCore;
 using Prn212.AIStudyHub.DataAccess;
-
 namespace Prn212.AIStudyHub.Services.Auth;
 
 /// <summary>
@@ -10,13 +10,13 @@ public class AdminService
   /// <summary>
   /// Lấy danh sách tất cả các người dùng có Role = "Student".
   /// </summary>
-  public List<AppUser> GetStudents()
+  public async Task<List<AppUser>> GetStudentsAsync()
   {
     using var context = new AistudyHubDbContext();
-    return context.AppUsers
+    return await context.AppUsers
       .Where(u => u.Role == "Student")
       .OrderByDescending(u => u.CreatedAt)
-      .ToList();
+      .ToListAsync();
   }
 
   /// <summary>

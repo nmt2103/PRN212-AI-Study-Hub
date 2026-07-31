@@ -18,21 +18,31 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       InitializeComponent();
       _initialDocumentId = initialDocumentId;
-      LoadSubjects();
-      LoadDocuments();
+
+      this.Loaded += EditDocumentWindow_Loaded;
 
       if (_initialDocumentId.HasValue)
       {
         spDocSelection.Visibility = Visibility.Collapsed;
+      }
+    }
+
+    private async void EditDocumentWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+      await LoadSubjectsAsync();
+      await LoadDocumentsAsync();
+
+      if (_initialDocumentId.HasValue)
+      {
         cbDocuments.SelectedValue = _initialDocumentId.Value;
       }
     }
 
-    private void LoadSubjects()
+    private async Task LoadSubjectsAsync()
     {
       try
       {
-        var subjects = _documentService.GetAllSubjects();
+        var subjects = await _documentService.GetAllSubjectsAsync();
         cbSubject.ItemsSource = subjects;
       }
       catch (Exception ex)
@@ -41,11 +51,11 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
     }
 
-    private void LoadDocuments()
+    private async Task LoadDocumentsAsync()
     {
       try
       {
-        var result = _documentService.SearchDocuments(page: 1, pageSize: 100);
+        var result = await _documentService.SearchDocumentsAsync(page: 1, pageSize: 100);
         cbDocuments.ItemsSource = result.Items;
       }
       catch (Exception ex)
@@ -54,7 +64,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
     }
 
-    private void CbDocuments_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void CbDocuments_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (_isDataLoading)
         return;
@@ -81,7 +91,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         _isDataLoading = true;
         try
         {
-          _originalDocument = _documentService.GetDetail(selectedDoc.Id);
+          _originalDocument = await _documentService.GetDetailAsync(selectedDoc.Id);
           if (_originalDocument != null)
           {
             txtTitle.Text = _originalDocument.Title;
@@ -225,11 +235,11 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
         // Reset change tracking
         _hasUnsavedChanges = false;
-        _originalDocument = _documentService.GetDetail(selectedDoc.Id);
+        _originalDocument = await _documentService.GetDetailAsync(selectedDoc.Id);
 
         // Nạp lại danh sách tài liệu
         _isDataLoading = true;
-        LoadDocuments();
+        await LoadDocumentsAsync();
         cbDocuments.SelectedValue = selectedDoc.Id;
         _isDataLoading = false;
 
