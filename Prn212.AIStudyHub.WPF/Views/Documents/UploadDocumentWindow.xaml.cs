@@ -2,17 +2,18 @@ using Microsoft.Win32;
 using Prn212.AIStudyHub.Services.Documents;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Prn212.AIStudyHub.WPF.Views.Documents
 {
   /// <summary>
-  /// Interaction logic for UploadDocumentWindow.xaml
-  /// Giao diện chỉ nhận thao tác người dùng và gọi Service - KHÔNG đụng database.
+  /// Giao diện tải lên tài liệu và thêm môn học.
   /// </summary>
   public partial class UploadDocumentWindow : Window
   {
     private readonly DocumentService _documentService = new();
     private string _selectedFilePath = string.Empty;
+    public bool SubjectAdded { get; private set; } = false;
 
     public UploadDocumentWindow()
     {
@@ -25,6 +26,17 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       try
       {
         LoadComboBoxData();
+        
+        // Show Admin tab if current user is Admin
+        if (App.CurrentUser?.Role == "Admin")
+        {
+            tabAddSubject.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            // Fully remove or collapse the tab for non-admins
+            tabAddSubject.Visibility = Visibility.Collapsed;
+        }
       }
       catch (Exception ex)
       {
@@ -104,6 +116,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
             chkUploadToCloud.IsChecked == true);
 
         MessageBox.Show("Tải tài liệu lên và lưu thông tin thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+        this.DialogResult = true;
         this.Close();
       }
       catch (Exception ex)
@@ -111,6 +124,43 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         MessageBox.Show($"Đã xảy ra lỗi trong quá trình upload tài liệu:\n{ex.Message}", "Lỗi upload", MessageBoxButton.OK, MessageBoxImage.Error);
         SetUiEnabledState(true);
       }
+    }
+
+    private async void BtnSaveSubject_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string name = txtSubjectName.Text.Trim();
+            string description = txtSubjectDescription.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                MessageBox.Show("Vui lòng nhập tên môn học.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            btnSaveSubject.IsEnabled = false;
+            await _documentService.AddSubjectAsync(name, description);
+            
+            MessageBox.Show("Thêm môn học thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            SubjectAdded = true;
+            
+            // Reload subjects in tab 1
+            LoadComboBoxData();
+            
+            // Clear inputs
+            txtSubjectName.Text = string.Empty;
+            txtSubjectDescription.Text = string.Empty;
+            
+            // Switch back to Tab 1
+            tabControl.SelectedIndex = 0;
+            btnSaveSubject.IsEnabled = true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            btnSaveSubject.IsEnabled = true;
+        }
     }
 
     private void SetUiEnabledState(bool isEnabled)
@@ -121,6 +171,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       btnBrowse.IsEnabled = isEnabled;
       btnUpload.IsEnabled = isEnabled;
       btnCancel.IsEnabled = isEnabled;
+      chkUploadToCloud.IsEnabled = isEnabled;
       spProgress.Visibility = isEnabled ? Visibility.Collapsed : Visibility.Visible;
     }
 
