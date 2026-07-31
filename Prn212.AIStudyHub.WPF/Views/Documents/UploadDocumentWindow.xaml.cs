@@ -100,7 +100,8 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
             App.CurrentUser.Id,
             (int) cbSubject.SelectedValue,
             txtTitle.Text.Trim(),
-            _selectedFilePath);
+            _selectedFilePath,
+            chkUploadToCloud.IsChecked == true);
 
         MessageBox.Show("Tải tài liệu lên và lưu thông tin thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         this.Close();

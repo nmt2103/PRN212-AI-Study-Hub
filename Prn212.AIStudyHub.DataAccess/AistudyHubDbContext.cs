@@ -72,6 +72,8 @@ public partial class AistudyHubDbContext : DbContext
       entity.Property(e => e.FileName).HasMaxLength(255);
       entity.Property(e => e.StoragePath).HasMaxLength(2048);
       entity.Property(e => e.Title).HasMaxLength(255);
+      entity.Property(e => e.IsCloudStored).HasDefaultValue(false);
+      entity.Property(e => e.CloudPublicId).HasMaxLength(500);
       entity.Property(e => e.UploadedAt).HasDefaultValueSql("(sysutcdatetime())");
       entity.HasOne(d => d.Subject).WithMany(p => p.Documents)
           .HasForeignKey(d => d.SubjectId).HasConstraintName("FK_Document_Subject");

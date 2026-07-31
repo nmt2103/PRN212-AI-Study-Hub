@@ -12,6 +12,8 @@ public partial class Document
   public string FileExtension { get; set; } = null!;
   public string ContentType { get; set; } = null!;
   public DateTime UploadedAt { get; set; }
+  public bool IsCloudStored { get; set; }
+  public string? CloudPublicId { get; set; }
   public virtual Subject Subject { get; set; } = null!;
   public virtual AppUser User { get; set; } = null!;
 }

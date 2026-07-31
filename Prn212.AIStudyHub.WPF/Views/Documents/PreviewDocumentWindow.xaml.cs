@@ -1,8 +1,8 @@
 using Prn212.AIStudyHub.DataAccess;
-using Prn212.AIStudyHub.Services.Documents;
 using Prn212.AIStudyHub.WPF.Helpers;
 using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Documents;
 using System.Xml.Linq;
@@ -20,10 +20,10 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       InitializeComponent();
       _doc = doc;
-      LoadDocument(doc);
+      _ = LoadDocumentAsync(doc);
     }
 
-    private void LoadDocument(Document doc)
+    private async Task LoadDocumentAsync(Document doc)
     {
       if (doc == null)
       {
@@ -34,26 +34,44 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       // 1. Cập nhật thông tin Header
       lblDocTitle.Text = doc.Title ?? "Không có tiêu đề";
       lblDocMeta.Text = $"{doc.FileExtension?.ToUpper() ?? "N/A"} • {DocumentDisplayHelper.FormatFileSize(doc.FileSize)}";
-
-      txtFileIcon.Text = DocumentDisplayHelper.GetFileIcon(doc.FileExtension);
       string ext = (doc.FileExtension ?? "").ToLower();
+      txtFileIcon.Text = ext switch
+      {
+        ".pdf" => "📕",
+        ".docx" => "📘",
+        ".xlsx" => "📗",
+        ".pptx" => "📙",
+        ".txt" => "📄",
+        ".md" => "📝",
+        _ => "📁"
+      };
 
-      // 2. Định vị đường dẫn tệp tin
+      // 2. Định vị đường dẫn tệp tin (local hoặc tải tạm từ Cloudinary)
       string filePath;
-      try
-      {
-        filePath = DocumentService.GetSafeFullPath(doc.StoragePath);
-      }
-      catch (Exception ex)
-      {
-        ShowError($"Đường dẫn tệp tin không hợp lệ: {ex.Message}");
-        return;
-      }
 
-      if (!File.Exists(filePath))
+      if (doc.IsCloudStored)
       {
-        ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");
-        return;
+        try
+        {
+          filePath = Path.Combine(Path.GetTempPath(), $"preview_{Guid.NewGuid()}{doc.FileExtension}");
+          using var httpClient = new HttpClient();
+          var bytes = await httpClient.GetByteArrayAsync(doc.StoragePath);
+          await File.WriteAllBytesAsync(filePath, bytes);
+        }
+        catch (Exception ex)
+        {
+          ShowError($"Không thể tải tệp từ Cloudinary để xem trước:\n{ex.Message}");
+          return;
+        }
+      }
+      else
+      {
+        filePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+        if (!File.Exists(filePath))
+        {
+          ShowError("Không tìm thấy tệp tin tài liệu trên hệ thống lưu trữ.");
+          return;
+        }
       }
 
       // 3. Xử lý hiển thị theo định dạng
@@ -142,7 +160,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
 
 
 
-    private void BtnDownload_Click(object sender, RoutedEventArgs e)
+    private async void BtnDownload_Click(object sender, RoutedEventArgs e)
     {
       if (_doc == null)
         return;
@@ -158,8 +176,17 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       {
         try
         {
-          string srcPath = DocumentService.GetSafeFullPath(_doc.StoragePath);
-          File.Copy(srcPath, saveDialog.FileName, true);
+          if (_doc.IsCloudStored)
+          {
+            using var httpClient = new HttpClient();
+            var bytes = await httpClient.GetByteArrayAsync(_doc.StoragePath);
+            await File.WriteAllBytesAsync(saveDialog.FileName, bytes);
+          }
+          else
+          {
+            string srcPath = Path.Combine(AppContext.BaseDirectory, _doc.StoragePath);
+            File.Copy(srcPath, saveDialog.FileName, true);
+          }
           MessageBox.Show("Tải xuống tài liệu thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
