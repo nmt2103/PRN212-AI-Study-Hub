@@ -147,10 +147,10 @@ namespace Prn212.AIStudyHub.WPF
     {
       var uploadWindow = new UploadDocumentWindow { Owner = this };
       uploadWindow.ShowDialog();
-      
+
       if (uploadWindow.SubjectAdded)
       {
-          await LoadSubjectFilterAsync();
+        await LoadSubjectFilterAsync();
       }
       await LoadDocumentsAsync(); // làm mới danh sách sau khi upload xong
     }

@@ -18,7 +18,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       InitializeComponent();
       _initialDocumentId = initialDocumentId;
-      
+
       this.Loaded += EditDocumentWindow_Loaded;
 
       if (_initialDocumentId.HasValue)
@@ -31,7 +31,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     {
       await LoadSubjectsAsync();
       await LoadDocumentsAsync();
-      
+
       if (_initialDocumentId.HasValue)
       {
         cbDocuments.SelectedValue = _initialDocumentId.Value;
