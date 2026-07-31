@@ -13,7 +13,7 @@ public partial class DocumentService
   /// Tìm kiếm tài liệu theo keyword trên name, subject name, subject description
   /// </summary>
   public async Task<(List<Document> Items, int TotalCount)> SearchDocumentsAsync(
-          string? keyword = null, int? subjectId = null, int? userId = null, int page = 1, int pageSize = 10, string? sortBy = null)
+        string? keyword = null, int? subjectId = null, int? userId = null, int page = 1, int pageSize = 10, string? sortBy = null)
   {
     page = Math.Max(1, page);
     pageSize = Math.Max(1, pageSize);
