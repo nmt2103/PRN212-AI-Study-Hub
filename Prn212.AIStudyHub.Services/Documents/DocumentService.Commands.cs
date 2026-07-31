@@ -191,4 +191,27 @@ public partial class DocumentService
     ".md" => "text/markdown",
     _ => "application/octet-stream"
   };
+
+    // Thêm môn học (Admin)
+  public async Task<Subject> AddSubjectAsync(string name, string description)
+  {
+    if (string.IsNullOrWhiteSpace(name))
+      throw new ArgumentException("Tên môn học không được để trống.");
+
+    using var context = new AistudyHubDbContext();
+    
+    if (context.Subjects.Any(s => s.Name.ToLower() == name.ToLower()))
+        throw new InvalidOperationException("Môn học này đã tồn tại.");
+
+    var subject = new Subject
+    {
+      Name = name.Trim(),
+      Description = description?.Trim(),
+      CreatedAt = DateTime.UtcNow
+    };
+
+    context.Subjects.Add(subject);
+    await context.SaveChangesAsync();
+    return subject;
+  }
 }
