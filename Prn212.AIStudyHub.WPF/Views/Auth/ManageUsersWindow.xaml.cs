@@ -19,16 +19,16 @@ public partial class ManageUsersWindow : Window
     Loaded += ManageUsersWindow_Loaded;
   }
 
-  private void ManageUsersWindow_Loaded(object sender, RoutedEventArgs e)
+  private async void ManageUsersWindow_Loaded(object sender, RoutedEventArgs e)
   {
-    LoadUsers();
+    await LoadUsersAsync();
   }
 
-  private void LoadUsers()
+  private async Task LoadUsersAsync()
   {
     try
     {
-      var students = _adminService.GetStudents();
+      var students = await _adminService.GetStudentsAsync();
       dgUsers.ItemsSource = students;
     }
     catch (Exception ex)
@@ -37,7 +37,7 @@ public partial class ManageUsersWindow : Window
     }
   }
 
-  private void BtnToggleStatus_Click(object sender, RoutedEventArgs e)
+  private async void BtnToggleStatus_Click(object sender, RoutedEventArgs e)
   {
     if (sender is Button btn && btn.DataContext is AppUser selectedUser)
     {
@@ -51,7 +51,7 @@ public partial class ManageUsersWindow : Window
         {
           _adminService.ToggleUserStatus(selectedUser.Id);
           MessageBox.Show($"Đã {action} tài khoản thành công.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-          LoadUsers();
+          await LoadUsersAsync();
         }
       }
       catch (Exception ex)

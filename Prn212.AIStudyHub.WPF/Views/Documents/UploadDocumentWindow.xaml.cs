@@ -21,11 +21,11 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       this.Loaded += UploadDocumentWindow_Loaded;
     }
 
-    private void UploadDocumentWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void UploadDocumentWindow_Loaded(object sender, RoutedEventArgs e)
     {
       try
       {
-        LoadComboBoxData();
+        await LoadComboBoxDataAsync();
         
         // Show Admin tab if current user is Admin
         if (App.CurrentUser?.Role == "Admin")
@@ -45,9 +45,9 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       }
     }
 
-    private void LoadComboBoxData()
+    private async Task LoadComboBoxDataAsync()
     {
-      var subjects = _documentService.GetAllSubjects();
+      var subjects = await _documentService.GetAllSubjectsAsync();
       cbSubject.ItemsSource = subjects;
       if (subjects.Any())
         cbSubject.SelectedIndex = 0;
@@ -146,7 +146,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
             SubjectAdded = true;
             
             // Reload subjects in tab 1
-            LoadComboBoxData();
+            await LoadComboBoxDataAsync();
             
             // Clear inputs
             txtSubjectName.Text = string.Empty;

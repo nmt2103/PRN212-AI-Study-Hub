@@ -31,12 +31,12 @@ namespace Prn212.AIStudyHub.WPF
       _debounceTimer.Tick += DebounceTimer_Tick;
     }
 
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
       UpdateWelcomeHeader();
-      LoadSubjectFilter();
+      await LoadSubjectFilterAsync();
       _initialized = true;
-      LoadDocuments();
+      await LoadDocumentsAsync();
     }
 
     private void UpdateWelcomeHeader()
@@ -56,15 +56,15 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void LoadSubjectFilter()
+    private async Task LoadSubjectFilterAsync()
     {
-      var subjects = _documentService.GetAllSubjects();
+      var subjects = await _documentService.GetAllSubjectsAsync();
       subjects.Insert(0, new Subject { Id = -1, Name = "-- Tất cả môn --" });
       cbSubjectFilter.ItemsSource = subjects;
       cbSubjectFilter.SelectedIndex = 0;
     }
 
-    private void LoadDocuments()
+    private async Task LoadDocumentsAsync()
     {
       try
       {
@@ -85,7 +85,7 @@ namespace Prn212.AIStudyHub.WPF
         }
 
         // Tìm kiếm trên: Title, Subject Name, Subject Description
-        var (items, total) = _documentService.SearchDocuments(keyword, subjectId, userId, 1, 200, sortBy);
+        var (items, total) = await _documentService.SearchDocumentsAsync(keyword, subjectId, userId, 1, 200, sortBy);
         dgDocuments.ItemsSource = items;
 
         if (items == null || items.Count == 0)
@@ -110,18 +110,18 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void Filter_Changed(object sender, RoutedEventArgs e)
+    private async void Filter_Changed(object sender, RoutedEventArgs e)
     {
       if (_initialized)
-        LoadDocuments();
+        await LoadDocumentsAsync();
     }
 
-    private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
+    private async void TxtSearch_KeyDown(object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
       {
         _debounceTimer.Stop();
-        LoadDocuments();
+        await LoadDocumentsAsync();
       }
     }
 
@@ -137,22 +137,22 @@ namespace Prn212.AIStudyHub.WPF
       _debounceTimer.Start();
     }
 
-    private void DebounceTimer_Tick(object? sender, EventArgs e)
+    private async void DebounceTimer_Tick(object? sender, EventArgs e)
     {
       _debounceTimer.Stop();
-      LoadDocuments();
+      await LoadDocumentsAsync();
     }
 
-    private void BtnUpload_Click(object sender, RoutedEventArgs e)
+    private async void BtnUpload_Click(object sender, RoutedEventArgs e)
     {
       var uploadWindow = new UploadDocumentWindow { Owner = this };
       uploadWindow.ShowDialog();
       
       if (uploadWindow.SubjectAdded)
       {
-          LoadSubjectFilter();
+          await LoadSubjectFilterAsync();
       }
-      LoadDocuments(); // làm mới danh sách sau khi upload xong
+      await LoadDocumentsAsync(); // làm mới danh sách sau khi upload xong
     }
 
     private void BtnLogout_Click(object sender, RoutedEventArgs e)
@@ -168,24 +168,26 @@ namespace Prn212.AIStudyHub.WPF
       this.Close();                  // rồi đóng trang chủ
     }
 
-    private void BtnOpenDetail_Click(object sender, RoutedEventArgs e)
+    private async Task OpenViewDocumentWindowAsync(Document selectedDoc)
+    {
+      var viewWindow = new ViewDocumentWindow(selectedDoc.Id) { Owner = this };
+      viewWindow.ShowDialog();
+      await LoadDocumentsAsync(); // Tải lại danh sách sau khi quay về
+    }
+
+    private async void BtnOpenDetail_Click(object sender, RoutedEventArgs e)
     {
       if (dgDocuments.SelectedItem is Document selectedDoc)
       {
-        var viewWindow = new ViewDocumentWindow(selectedDoc.Id) { Owner = this };
-        viewWindow.ShowDialog();
-        LoadDocuments(); // Tải lại danh sách sau khi quay về (nếu có xóa/sửa)
+        await OpenViewDocumentWindowAsync(selectedDoc);
       }
     }
 
-    private void DgDocuments_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private async void DgDocuments_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
       if (dgDocuments.SelectedItem is Document selectedDoc)
       {
-        var viewWindow = new ViewDocumentWindow(selectedDoc.Id);
-        viewWindow.Owner = this;
-        viewWindow.ShowDialog();
-        LoadDocuments(); // Tải lại danh sách sau khi quay về
+        await OpenViewDocumentWindowAsync(selectedDoc);
       }
     }
 
@@ -228,7 +230,7 @@ namespace Prn212.AIStudyHub.WPF
         }
         finally
         {
-          LoadDocuments();
+          await LoadDocumentsAsync();
         }
       }
     }
@@ -268,18 +270,18 @@ namespace Prn212.AIStudyHub.WPF
         }
         finally
         {
-          LoadDocuments();
+          await LoadDocumentsAsync();
         }
       }
     }
 
-    private void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
+    private async void BtnOpenEdit_Click(object sender, RoutedEventArgs e)
     {
       if (dgDocuments.SelectedItem is Document selectedDoc)
       {
         var editWindow = new Views.Documents.EditDocumentWindow(selectedDoc.Id) { Owner = this };
         editWindow.ShowDialog();
-        LoadDocuments();
+        await LoadDocumentsAsync();
       }
     }
 
@@ -292,13 +294,11 @@ namespace Prn212.AIStudyHub.WPF
       }
     }
 
-    private void BtnRowDetail_Click(object sender, RoutedEventArgs e)
+    private async void BtnRowDetail_Click(object sender, RoutedEventArgs e)
     {
       if (sender is Button btn && btn.DataContext is Document selectedDoc)
       {
-        var detailWindow = new Views.Documents.ViewDocumentWindow(selectedDoc.Id) { Owner = this };
-        detailWindow.ShowDialog();
-        LoadDocuments();
+        await OpenViewDocumentWindowAsync(selectedDoc);
       }
     }
 

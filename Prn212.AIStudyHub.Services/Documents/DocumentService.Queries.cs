@@ -12,7 +12,7 @@ public partial class DocumentService
   /// <summary>
   /// Tìm kiếm tài liệu theo keyword trên name, subject name, subject description
   /// </summary>
-  public (List<Document> Items, int TotalCount) SearchDocuments(
+  public async Task<(List<Document> Items, int TotalCount)> SearchDocumentsAsync(
           string? keyword = null, int? subjectId = null, int? userId = null, int page = 1, int pageSize = 10, string? sortBy = null)
   {
     page = Math.Max(1, page);
@@ -25,12 +25,11 @@ public partial class DocumentService
 
     if (!string.IsNullOrWhiteSpace(keyword))
     {
-      string lowerKeyword = keyword.ToLower();
       query = query.Where(d =>
-          d.Title.ToLower().Contains(lowerKeyword) ||
-          d.FileName.ToLower().Contains(lowerKeyword) ||
-          d.Subject.Name.ToLower().Contains(lowerKeyword) ||
-          (d.Subject.Description != null && d.Subject.Description.ToLower().Contains(lowerKeyword))
+          d.Title.Contains(keyword) ||
+          d.FileName.Contains(keyword) ||
+          d.Subject.Name.Contains(keyword) ||
+          (d.Subject.Description != null && d.Subject.Description.Contains(keyword))
       );
     }
 
@@ -52,23 +51,23 @@ public partial class DocumentService
       _ => query.OrderByDescending(d => d.UploadedAt)
     };
 
-    int total = query.Count();
-    var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+    int total = await query.CountAsync();
+    var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     return (items, total);
   }
 
-  public Document? GetDetail(int documentId)
+  public async Task<Document?> GetDetailAsync(int documentId)
   {
     using var context = new AistudyHubDbContext();
-    return context.Documents
+    return await context.Documents
         .Include(d => d.Subject)
         .Include(d => d.User)
-        .FirstOrDefault(d => d.Id == documentId);
+        .FirstOrDefaultAsync(d => d.Id == documentId);
   }
 
-  public List<Subject> GetAllSubjects()
+  public async Task<List<Subject>> GetAllSubjectsAsync()
   {
     using var context = new AistudyHubDbContext();
-    return context.Subjects.OrderBy(s => s.Name).ToList();
+    return await context.Subjects.OrderBy(s => s.Name).ToListAsync();
   }
 }

@@ -23,13 +23,13 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
       this.Loaded += ViewDocumentWindow_Loaded;
     }
 
-    private void ViewDocumentWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void ViewDocumentWindow_Loaded(object sender, RoutedEventArgs e)
     {
       try
       {
         if (_initialDocumentId.HasValue)
         {
-          LoadDocumentDetail(_initialDocumentId.Value);
+          await LoadDocumentDetailAsync(_initialDocumentId.Value);
         }
         else
         {
@@ -48,11 +48,11 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     /// <summary>
     /// Tải chi tiết tài liệu từ database và hiển thị
     /// </summary>
-    private void LoadDocumentDetail(int documentId)
+    private async Task LoadDocumentDetailAsync(int documentId)
     {
       try
       {
-        var doc = _documentService.GetDetail(documentId);
+        var doc = await _documentService.GetDetailAsync(documentId);
         if (doc == null)
         {
           MessageBox.Show("Tài liệu không tồn tại trên hệ thống.",
@@ -193,7 +193,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
     /// <summary>
     /// Nút Edit: Mở cửa sổ EditDocumentWindow để sửa metadata
     /// </summary>
-    private void BtnEdit_Click(object sender, RoutedEventArgs e)
+    private async void BtnEdit_Click(object sender, RoutedEventArgs e)
     {
       if (_currentDocument == null)
       {
@@ -210,7 +210,7 @@ namespace Prn212.AIStudyHub.WPF.Views.Documents
         editWindow.ShowDialog();
 
         // Sau khi sửa xong, tải lại chi tiết tài liệu
-        LoadDocumentDetail(_currentDocument.Id);
+        await LoadDocumentDetailAsync(_currentDocument.Id);
       }
       catch (Exception ex)
       {
