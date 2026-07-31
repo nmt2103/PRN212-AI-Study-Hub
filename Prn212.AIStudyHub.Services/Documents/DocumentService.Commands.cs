@@ -9,283 +9,285 @@ namespace Prn212.AIStudyHub.Services.Documents;
 /// </summary>
 public partial class DocumentService
 {
-    private const long MaxFileSizeBytes = 50 * 1024 * 1024; // 50 MB
-    private static readonly string[] AllowedExtensions =
-        { ".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".md" };
+  private const long MaxFileSizeBytes = 50 * 1024 * 1024; // 50 MB
+  private static readonly string[] AllowedExtensions =
+      { ".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".md" };
 
-    private static readonly HttpClient _httpClient = new();
+  private static readonly HttpClient _httpClient = new();
 
-    /// <summary>
-    /// Upload tài liệu. Nếu uploadToCloud = true, tệp sẽ được lưu trên Cloudinary
-    /// thay vì lưu vào thư mục "uploads" cục bộ như trước.
-    /// </summary>
-    public async Task<Document> UploadAsync(int userId, int subjectId, string title, string sourceFilePath, bool uploadToCloud = false)
+  /// <summary>
+  /// Upload tài liệu. Nếu uploadToCloud = true, tệp sẽ được lưu trên Cloudinary
+  /// thay vì lưu vào thư mục "uploads" cục bộ như trước.
+  /// </summary>
+  public async Task<Document> UploadAsync(int userId, int subjectId, string title, string sourceFilePath, bool uploadToCloud = false)
+  {
+    if (string.IsNullOrWhiteSpace(sourceFilePath) || !File.Exists(sourceFilePath))
+      throw new FileNotFoundException("Tệp nguồn không tồn tại.");
+
+    var fileInfo = new FileInfo(sourceFilePath);
+    if (fileInfo.Length > MaxFileSizeBytes)
+      throw new InvalidOperationException("Dung lượng tệp vượt quá 50MB.");
+
+    string extension = Path.GetExtension(sourceFilePath).ToLowerInvariant();
+    if (!AllowedExtensions.Contains(extension))
+      throw new InvalidOperationException("Định dạng tệp không được hỗ trợ.");
+
+    Document document;
+    string? uploadedCloudPublicId = null;
+
+    if (uploadToCloud)
     {
-        if (string.IsNullOrWhiteSpace(sourceFilePath) || !File.Exists(sourceFilePath))
-            throw new FileNotFoundException("Tệp nguồn không tồn tại.");
+      var cloudStorage = new CloudinaryStorageService();
+      var (secureUrl, publicId) = await cloudStorage.UploadFileAsync(sourceFilePath, fileInfo.Name);
+      uploadedCloudPublicId = publicId;
 
-        var fileInfo = new FileInfo(sourceFilePath);
-        if (fileInfo.Length > MaxFileSizeBytes)
-            throw new InvalidOperationException("Dung lượng tệp vượt quá 50MB.");
+      document = new Document
+      {
+        UserId = userId,
+        SubjectId = subjectId,
+        Title = title.Trim(),
+        FileName = fileInfo.Name,
+        StoragePath = secureUrl,           // lưu URL Cloudinary thay vì đường dẫn local
+        FileSize = fileInfo.Length,
+        FileExtension = extension,
+        ContentType = GetContentType(extension),
+        UploadedAt = DateTime.UtcNow,
+        IsCloudStored = true,
+        CloudPublicId = publicId
+      };
+    }
+    else
+    {
+      string uploadDir = Path.Combine(AppContext.BaseDirectory, "uploads");
+      Directory.CreateDirectory(uploadDir);
 
-        string extension = Path.GetExtension(sourceFilePath).ToLowerInvariant();
-        if (!AllowedExtensions.Contains(extension))
-            throw new InvalidOperationException("Định dạng tệp không được hỗ trợ.");
+      string uniqueFileName = $"{Guid.NewGuid()}_{fileInfo.Name}";
+      string destinationPath = Path.Combine(uploadDir, uniqueFileName);
 
-        Document document;
-        string? uploadedCloudPublicId = null;
+      using (var sourceStream = File.OpenRead(sourceFilePath))
+      using (var destStream = File.Create(destinationPath))
+      {
+        await sourceStream.CopyToAsync(destStream);
+      }
 
-        if (uploadToCloud)
-        {
-            var cloudStorage = new CloudinaryStorageService();
-            var (secureUrl, publicId) = await cloudStorage.UploadFileAsync(sourceFilePath, fileInfo.Name);
-            uploadedCloudPublicId = publicId;
+      document = new Document
+      {
+        UserId = userId,
+        SubjectId = subjectId,
+        Title = title.Trim(),
+        FileName = fileInfo.Name,
+        StoragePath = Path.Combine("uploads", uniqueFileName),
+        FileSize = fileInfo.Length,
+        FileExtension = extension,
+        ContentType = GetContentType(extension),
+        UploadedAt = DateTime.UtcNow,
+        IsCloudStored = false
+      };
+    }
 
-            document = new Document
-            {
-                UserId = userId,
-                SubjectId = subjectId,
-                Title = title.Trim(),
-                FileName = fileInfo.Name,
-                StoragePath = secureUrl,           // lưu URL Cloudinary thay vì đường dẫn local
-                FileSize = fileInfo.Length,
-                FileExtension = extension,
-                ContentType = GetContentType(extension),
-                UploadedAt = DateTime.UtcNow,
-                IsCloudStored = true,
-                CloudPublicId = publicId
-            };
-        }
-        else
-        {
-            string uploadDir = Path.Combine(AppContext.BaseDirectory, "uploads");
-            Directory.CreateDirectory(uploadDir);
-
-            string uniqueFileName = $"{Guid.NewGuid()}_{fileInfo.Name}";
-            string destinationPath = Path.Combine(uploadDir, uniqueFileName);
-
-            using (var sourceStream = File.OpenRead(sourceFilePath))
-            using (var destStream = File.Create(destinationPath))
-            {
-                await sourceStream.CopyToAsync(destStream);
-            }
-
-            document = new Document
-            {
-                UserId = userId,
-                SubjectId = subjectId,
-                Title = title.Trim(),
-                FileName = fileInfo.Name,
-                StoragePath = Path.Combine("uploads", uniqueFileName),
-                FileSize = fileInfo.Length,
-                FileExtension = extension,
-                ContentType = GetContentType(extension),
-                UploadedAt = DateTime.UtcNow,
-                IsCloudStored = false
-            };
-        }
-
+    try
+    {
+      using var context = new AistudyHubDbContext();
+      context.Documents.Add(document);
+      await context.SaveChangesAsync();
+      return document;
+    }
+    catch
+    {
+      // Rollback: xóa tệp vừa lưu (local hoặc cloud) nếu lưu DB thất bại
+      if (document.IsCloudStored)
+      {
         try
         {
-            using var context = new AistudyHubDbContext();
-            context.Documents.Add(document);
-            await context.SaveChangesAsync();
-            return document;
+          var cloudStorage = new CloudinaryStorageService();
+          await cloudStorage.DeleteFileAsync(uploadedCloudPublicId);
         }
-        catch
-        {
-            // Rollback: xóa tệp vừa lưu (local hoặc cloud) nếu lưu DB thất bại
-            if (document.IsCloudStored)
-            {
-                try
-                {
-                    var cloudStorage = new CloudinaryStorageService();
-                    await cloudStorage.DeleteFileAsync(uploadedCloudPublicId);
-                }
-                catch { /* best-effort cleanup */ }
-            }
-            else
-            {
-                string destinationPath = Path.Combine(AppContext.BaseDirectory, document.StoragePath);
-                if (File.Exists(destinationPath))
-                    File.Delete(destinationPath);
-            }
-            throw;
-        }
+        catch { /* best-effort cleanup */ }
+      }
+      else
+      {
+        string destinationPath = Path.Combine(AppContext.BaseDirectory, document.StoragePath);
+        if (File.Exists(destinationPath))
+          File.Delete(destinationPath);
+      }
+      throw;
+    }
+  }
+
+  public async Task DownloadAsync(int documentId, string destinationFilePath, IProgress<double>? progress = null)
+  {
+    using var context = new AistudyHubDbContext();
+    var doc = await context.Documents.FindAsync(documentId);
+    if (doc == null)
+      throw new FileNotFoundException("Tài liệu không tồn tại trên hệ thống");
+
+    if (doc.IsCloudStored)
+    {
+      await DownloadFromCloudAsync(doc.StoragePath, destinationFilePath, progress);
+      return;
     }
 
-    public async Task DownloadAsync(int documentId, string destinationFilePath, IProgress<double>? progress = null)
+    string sourcePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
+    if (!File.Exists(sourcePath))
+      throw new FileNotFoundException("Không tìm thấy file gốc trên server");
+
+    const int bufferSize = 81920;
+    byte[] buffer = new byte[bufferSize];
+
+    try
     {
-        using var context = new AistudyHubDbContext();
-        var doc = await context.Documents.FindAsync(documentId);
-        if (doc == null)
-            throw new FileNotFoundException("Tài liệu không tồn tại trên hệ thống");
+      using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
+      using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
 
-        if (doc.IsCloudStored)
+      long totalBytes = sourceStream.Length;
+      long bytesRead = 0;
+      int read;
+
+      while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+      {
+        await destStream.WriteAsync(buffer, 0, read);
+        bytesRead += read;
+
+        if (progress != null && totalBytes > 0)
         {
-            await DownloadFromCloudAsync(doc.StoragePath, destinationFilePath, progress);
-            return;
+          double percent = (double) bytesRead / totalBytes * 100;
+          progress.Report(percent);
         }
-
-        string sourcePath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
-        if (!File.Exists(sourcePath))
-            throw new FileNotFoundException("Không tìm thấy file gốc trên server");
-
-        const int bufferSize = 81920;
-        byte[] buffer = new byte[bufferSize];
-
+      }
+    }
+    catch
+    {
+      if (File.Exists(destinationFilePath))
+      {
         try
-        {
-            using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
-            using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
-
-            long totalBytes = sourceStream.Length;
-            long bytesRead = 0;
-            int read;
-
-            while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-            {
-                await destStream.WriteAsync(buffer, 0, read);
-                bytesRead += read;
-
-                if (progress != null && totalBytes > 0)
-                {
-                    double percent = (double)bytesRead / totalBytes * 100;
-                    progress.Report(percent);
-                }
-            }
-        }
-        catch
-        {
-            if (File.Exists(destinationFilePath))
-            {
-                try { File.Delete(destinationFilePath); }
-                catch { /* Bỏ qua lỗi xóa tệp khi đang xử lý ngoại lệ */ }
-            }
-            throw;
-        }
+        { File.Delete(destinationFilePath); }
+        catch { /* Bỏ qua lỗi xóa tệp khi đang xử lý ngoại lệ */ }
+      }
+      throw;
     }
+  }
 
-    /// <summary>
-    /// Tải tệp về từ URL Cloudinary (dùng khi Document.IsCloudStored = true).
-    /// </summary>
-    private async Task DownloadFromCloudAsync(string fileUrl, string destinationFilePath, IProgress<double>? progress)
+  /// <summary>
+  /// Tải tệp về từ URL Cloudinary (dùng khi Document.IsCloudStored = true).
+  /// </summary>
+  private async Task DownloadFromCloudAsync(string fileUrl, string destinationFilePath, IProgress<double>? progress)
+  {
+    using var response = await _httpClient.GetAsync(fileUrl, HttpCompletionOption.ResponseHeadersRead);
+    response.EnsureSuccessStatusCode();
+
+    long? totalBytes = response.Content.Headers.ContentLength;
+    const int bufferSize = 81920;
+    byte[] buffer = new byte[bufferSize];
+    long bytesRead = 0;
+
+    try
     {
-        using var response = await _httpClient.GetAsync(fileUrl, HttpCompletionOption.ResponseHeadersRead);
-        response.EnsureSuccessStatusCode();
+      using var sourceStream = await response.Content.ReadAsStreamAsync();
+      using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
 
-        long? totalBytes = response.Content.Headers.ContentLength;
-        const int bufferSize = 81920;
-        byte[] buffer = new byte[bufferSize];
-        long bytesRead = 0;
+      int read;
+      while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+      {
+        await destStream.WriteAsync(buffer, 0, read);
+        bytesRead += read;
 
+        if (progress != null && totalBytes.HasValue && totalBytes.Value > 0)
+        {
+          double percent = (double) bytesRead / totalBytes.Value * 100;
+          progress.Report(percent);
+        }
+      }
+    }
+    catch
+    {
+      if (File.Exists(destinationFilePath))
+      {
         try
-        {
-            using var sourceStream = await response.Content.ReadAsStreamAsync();
-            using var destStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write);
-
-            int read;
-            while ((read = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-            {
-                await destStream.WriteAsync(buffer, 0, read);
-                bytesRead += read;
-
-                if (progress != null && totalBytes.HasValue && totalBytes.Value > 0)
-                {
-                    double percent = (double)bytesRead / totalBytes.Value * 100;
-                    progress.Report(percent);
-                }
-            }
-        }
-        catch
-        {
-            if (File.Exists(destinationFilePath))
-            {
-                try { File.Delete(destinationFilePath); }
-                catch { /* Bỏ qua lỗi xóa tệp khi đang xử lý ngoại lệ */ }
-            }
-            throw;
-        }
+        { File.Delete(destinationFilePath); }
+        catch { /* Bỏ qua lỗi xóa tệp khi đang xử lý ngoại lệ */ }
+      }
+      throw;
     }
+  }
 
-    public async Task UpdateMetadataAsync(int documentId, string title, int subjectId, int currentUserId)
+  public async Task UpdateMetadataAsync(int documentId, string title, int subjectId, int currentUserId)
+  {
+    if (string.IsNullOrWhiteSpace(title))
+      throw new ArgumentException("Tiêu đề tài liệu không được để trống.");
+
+    using var context = new AistudyHubDbContext();
+
+    var doc = await context.Documents.FindAsync(documentId);
+    if (doc == null)
+      throw new KeyNotFoundException("Không tìm thấy tài liệu cần chỉnh sửa trên hệ thống.");
+
+    if (doc.UserId != currentUserId)
+      throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa tài liệu của người khác.");
+
+    doc.Title = title.Trim();
+    doc.SubjectId = subjectId;
+
+    await context.SaveChangesAsync();
+  }
+
+  public async Task DeleteAsync(int documentId, int currentUserId)
+  {
+    using var context = new AistudyHubDbContext();
+    using var transaction = await context.Database.BeginTransactionAsync();
+
+    try
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Tiêu đề tài liệu không được để trống.");
+      var doc = await context.Documents.FindAsync(documentId);
+      if (doc == null)
+        throw new KeyNotFoundException("Không tìm thấy tài liệu cần xóa trên hệ thống.");
 
-        using var context = new AistudyHubDbContext();
+      if (doc.UserId != currentUserId)
+        throw new UnauthorizedAccessException("Bạn không có quyền xóa tài liệu của người khác.");
 
-        var doc = await context.Documents.FindAsync(documentId);
-        if (doc == null)
-            throw new KeyNotFoundException("Không tìm thấy tài liệu cần chỉnh sửa trên hệ thống.");
+      bool isCloud = doc.IsCloudStored;
+      string? cloudPublicId = doc.CloudPublicId;
+      string fullPath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
 
-        if (doc.UserId != currentUserId)
-            throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa tài liệu của người khác.");
+      // Xóa trong database trước
+      context.Documents.Remove(doc);
+      await context.SaveChangesAsync();
 
-        doc.Title = title.Trim();
-        doc.SubjectId = subjectId;
+      // Commit transaction trước để đảm bảo tính toàn vẹn dữ liệu DB
+      await transaction.CommitAsync();
 
-        await context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(int documentId, int currentUserId)
-    {
-        using var context = new AistudyHubDbContext();
-        using var transaction = await context.Database.BeginTransactionAsync();
-
-        try
+      // Xóa file vật lý / cloud sau khi commit thành công (hoạt động best-effort)
+      try
+      {
+        if (isCloud)
         {
-            var doc = await context.Documents.FindAsync(documentId);
-            if (doc == null)
-                throw new KeyNotFoundException("Không tìm thấy tài liệu cần xóa trên hệ thống.");
-
-            if (doc.UserId != currentUserId)
-                throw new UnauthorizedAccessException("Bạn không có quyền xóa tài liệu của người khác.");
-
-            bool isCloud = doc.IsCloudStored;
-            string? cloudPublicId = doc.CloudPublicId;
-            string fullPath = Path.Combine(AppContext.BaseDirectory, doc.StoragePath);
-
-            // Xóa trong database trước
-            context.Documents.Remove(doc);
-            await context.SaveChangesAsync();
-
-            // Commit transaction trước để đảm bảo tính toàn vẹn dữ liệu DB
-            await transaction.CommitAsync();
-
-            // Xóa file vật lý / cloud sau khi commit thành công (hoạt động best-effort)
-            try
-            {
-                if (isCloud)
-                {
-                    var cloudStorage = new CloudinaryStorageService();
-                    await cloudStorage.DeleteFileAsync(cloudPublicId);
-                }
-                else if (File.Exists(fullPath))
-                {
-                    File.Delete(fullPath);
-                }
-            }
-            catch (Exception)
-            {
-                // Ghi log/bỏ qua lỗi xóa tệp vật lý/cloud vì bản ghi DB đã được xóa thành công
-            }
+          var cloudStorage = new CloudinaryStorageService();
+          await cloudStorage.DeleteFileAsync(cloudPublicId);
         }
-        catch (Exception)
+        else if (File.Exists(fullPath))
         {
-            await transaction.RollbackAsync();
-            throw;
+          File.Delete(fullPath);
         }
+      }
+      catch (Exception)
+      {
+        // Ghi log/bỏ qua lỗi xóa tệp vật lý/cloud vì bản ghi DB đã được xóa thành công
+      }
     }
-
-    private static string GetContentType(string extension) => extension.ToLowerInvariant() switch
+    catch (Exception)
     {
-        ".pdf" => "application/pdf",
-        ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        ".txt" => "text/plain",
-        ".md" => "text/markdown",
-        _ => "application/octet-stream"
-    };
+      await transaction.RollbackAsync();
+      throw;
+    }
+  }
+
+  private static string GetContentType(string extension) => extension.ToLowerInvariant() switch
+  {
+    ".pdf" => "application/pdf",
+    ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ".txt" => "text/plain",
+    ".md" => "text/markdown",
+    _ => "application/octet-stream"
+  };
 }
