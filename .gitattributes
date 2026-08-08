@@ -1,0 +1,8 @@
+# Cấu hình mặc định: Ép buộc tất cả các tệp văn bản sử dụng LF
+* text=auto eol=lf
+
+# Loại trừ các tệp nhị phân (Git sẽ không can thiệp line endings)
+*.png binary
+*.jpg binary
+*.dll binary
+*.exe binary

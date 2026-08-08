@@ -1,0 +1,9 @@
+# Đánh dấu đây là file cấu hình gốc
+root = true
+
+# Áp dụng cho toàn bộ các loại file
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
