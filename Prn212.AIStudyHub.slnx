@@ -1,5 +1,9 @@
 <Solution>
-  <Project Path="Prn212.AIStudyHub.DataAccess/Prn212.AIStudyHub.DataAccess.csproj" />
-  <Project Path="Prn212.AIStudyHub.Services/Prn212.AIStudyHub.Services.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/PRN212.AIStudyHub.Application/PRN212.AIStudyHub.Application.csproj" />
+    <Project Path="src/PRN212.AIStudyHub.Domain/PRN212.AIStudyHub.Domain.csproj" />
+    <Project Path="src/PRN212.AIStudyHub.Infrastructure/PRN212.AIStudyHub.Infrastructure.csproj" />
+    <Project Path="src/PRN212.AIStudyHub.WebAPI/PRN212.AIStudyHub.WebAPI.csproj" />
+  </Folder>
   <Project Path="Prn212.AIStudyHub.WPF/Prn212.AIStudyHub.WPF.csproj" />
 </Solution>

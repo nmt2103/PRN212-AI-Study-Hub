@@ -1,0 +1,21 @@
+@PRN212.AIStudyHub.WebAPI_HostAddress = http://localhost:5032
+
+### 1. Register New User
+POST {{WebAPI_HostAddress}}/api/v1//auth/register
+Content-Type: application/json
+
+{
+  "email": "student@aistudyhub.com",
+  "password": "123456",
+  "firstName": "Student",
+  "lastName": "Study Hub"
+}
+
+### 2. Login User
+POST {{WebAPI_HostAddress}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@aistudyhub.com",
+  "password": "123456"
+}
