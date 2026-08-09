@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PRN212.AIStudyHub.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using PRN212.AIStudyHub.Infrastructure.Data;
 namespace PRN212.AIStudyHub.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AistudyHubDbContext))]
-    partial class AistudyHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260809110430_AddRefreshTokenRelationship")]
+    partial class AddRefreshTokenRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

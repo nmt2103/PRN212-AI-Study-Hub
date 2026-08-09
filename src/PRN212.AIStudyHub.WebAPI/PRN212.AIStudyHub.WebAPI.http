@@ -7,8 +7,10 @@ Content-Type: application/json
 {
   "email": "student@aistudyhub.com",
   "password": "123456",
-  "firstName": "Student",
-  "lastName": "Study Hub"
+  "confirmPassword": "123456",
+  "firstName": "Student"
+  "lastName": "A"
+  "role": "Student"
 }
 
 ### 2. Login User

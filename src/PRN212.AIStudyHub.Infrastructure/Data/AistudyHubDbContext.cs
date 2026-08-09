@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Domain.Entities;
 
 namespace PRN212.AIStudyHub.Infrastructure.Data;
 
-public class AistudyHubDbContext : DbContext
+public class AistudyHubDbContext : DbContext, IAppDbContext
 {
   public AistudyHubDbContext(DbContextOptions<AistudyHubDbContext> options) : base(options) { }
 
