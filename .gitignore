@@ -3,8 +3,14 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Local config
+# (Local Configurations)
 appsettings.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+
+# Bỏ qua các file bí mật cá nhân
+**/secrets.json
 
 # Agent
 AGENTS.md
