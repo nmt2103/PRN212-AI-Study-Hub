@@ -1,6 +1,6 @@
 # AI Study Hub
 
-Ứng dụng Desktop quản lý tài liệu học tập thông minh sử dụng WPF (.NET 8.0), Entity Framework Core (Database-First) và SQL Server.
+Ứng dụng Desktop quản lý tài liệu học tập thông minh sử dụng WPF, ASP.NET Core Web API, Entity Framework Core (Database-First) và SQL Server.
 
 ---
 
@@ -11,27 +11,32 @@
 
 ---
 
-## 2. Kiến Trúc Dự Án (3-Layer)
+## 2. Kiến Trúc Dự Án (Clean Architecture + Web API)
 
-Dự án áp dụng mô hình 3-Layer rút gọn với luồng dữ liệu một chiều:
+Dự án áp dụng mô hình Clean Architecture kết hợp mô hình Client-Server:
 
 ```
-Presentation (WPF) ──> Business (Services) ──> DataAccess (DbContext) ──> SQL Server
+WPF Client (HTTP) ──> Web API ──> Application ──> Domain / Infrastructure ──> SQL Server
 ```
 
-- **Prn212.AIStudyHub.DataAccess:** Quản lý kết nối Database (DbContext) và các thực thể (Entities).
-- **Prn212.AIStudyHub.Services:** Xử lý toàn bộ logic nghiệp vụ, chia theo thư mục tính năng (`Auth` và `Documents`).
-- **Prn212.AIStudyHub.WPF:** Giao diện người dùng (Views, Resource Styles) và quản lý session (`App.xaml.cs`).
+- **Prn212.AIStudyHub.WPF:** Giao diện người dùng. Gọi API qua `HttpClient` thay vì kết nối DB trực tiếp.
+- **src/PRN212.AIStudyHub.WebAPI:** Chứa các RESTful API Endpoints phục vụ Client.
+- **src/PRN212.AIStudyHub.Application:** Xử lý logic nghiệp vụ (Business Logic), Interfaces, DTOs.
+- **src/PRN212.AIStudyHub.Domain:** Chứa các Entities cốt lõi.
+- **src/PRN212.AIStudyHub.Infrastructure:** Quản lý kết nối Database (`AistudyHubDbContext`) và Repositories.
 
 ---
 
 ## 3. Hướng Dẫn Cài Đặt & Chạy Nhanh
 
 1. **Database:** Thực thi tệp tin [database/schema.sql](schema.sql) và [database/seeding.sql](seeding.sql) trên SQL Server.
-2. **Cấu hình:** Sao chép `Prn212.AIStudyHub.WPF/appsettings.example.json` thành `appsettings.json` và cấu hình lại ConnectionString.
-3. **Khởi chạy:**
+2. **Cấu hình API:** Mở file `src/PRN212.AIStudyHub.WebAPI/appsettings.json` và cấu hình lại ConnectionString.
+3. **Cấu hình Client:** Mở file `Prn212.AIStudyHub.WPF/appsettings.json` và cấu hình Base URL cho Web API.
+4. **Khởi chạy API:**
    ```bash
-   dotnet restore
-   dotnet build
-   dotnet run --project Prn212.AIStudyHub.WPF
+   dotnet run --project src/PRN212.AIStudyHub.WebAPI/PRN212.AIStudyHub.WebAPI.csproj
+   ```
+5. **Khởi chạy WPF Client:**
+   ```bash
+   dotnet run --project Prn212.AIStudyHub.WPF/Prn212.AIStudyHub.WPF.csproj
    ```
