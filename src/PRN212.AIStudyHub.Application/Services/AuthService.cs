@@ -23,13 +23,13 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
     // Check if the user exists and if the provided password matches the stored password hash
     if (user is null || !passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
     {
-      throw new Exception("Invalid credentials");
+      throw new InvalidOperationException("Invalid credentials");
     }
 
     // Check if the user account is active
     if (!user.IsActive)
     {
-      throw new Exception("User account is inactive");
+      throw new InvalidOperationException("User account is inactive");
     }
 
     // Generate access token and refresh token
@@ -69,7 +69,7 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 
     if (existingEmail is not null)
     {
-      throw new Exception("Email already exists");
+      throw new InvalidOperationException("Email already exists");
     }
 
     // Validate password and confirm password
@@ -123,8 +123,16 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
     return new AuthResponse(AccessToken: accessToken, RefreshToken: refreshToken, TokenType: "Bearer", ExpiresIn: 3600, User: userDto);
   }
 
-  public Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
+  public async Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    // Query the user from the database based on the provided Id
+    var user = await context.AppUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+    // Check if user found
+    if (user is null)
+      throw new Exception("User not found");
+
+    // Return the user profile info
+    return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
   }
 }
