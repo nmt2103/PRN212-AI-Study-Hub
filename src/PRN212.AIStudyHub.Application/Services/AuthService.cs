@@ -14,7 +14,7 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
     // Validate the input parameters
     if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
     {
-      throw new Exception("Email and password are required");
+      throw new ArgumentException("Email and password are required");
     }
 
     // Query the user from the database based on the provided email
@@ -32,36 +32,15 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
       throw new InvalidOperationException("User account is inactive");
     }
 
-    // Generate access token and refresh token
-    string accessToken = jwtTokenGenerator.GenerateToken(user);
-    string refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-
-    // Create a new RefreshToken entity and set its properties
-    var refreshTokenEntity = new RefreshToken
-    {
-      UserId = user.Id,
-      Token = refreshToken,
-      ExpiresAt = DateTime.UtcNow.AddDays(7),
-      IsRevoked = false,
-    };
-
-    // Add the refresh token entity to the database context and save changes
-    context.RefreshTokens.Add(refreshTokenEntity);
-    await context.SaveChangesAsync(cancellationToken);
-
-    // Create a UserDto object to include user information in the response
-    UserDto userDto = new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
-
-    // Return the authentication response with the generated tokens and user information
-    return new AuthResponse(AccessToken: accessToken, RefreshToken: refreshToken, TokenType: "Bearer", ExpiresIn: 3600, User: userDto);
+    return await GenerateAuthResponseAsync(user, cancellationToken);
   }
 
   public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
   {
     // Validate the input parameters
-    if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.ConfirmPassword) || string.IsNullOrWhiteSpace(request.firstName) || string.IsNullOrWhiteSpace(request.lastName))
+    if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.ConfirmPassword) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
     {
-      throw new Exception("Email, password, and confirm password are required");
+      throw new ArgumentException("Email, password, and confirm password are required");
     }
 
     // Check if the email already exists in the database
@@ -75,13 +54,13 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
     // Validate password and confirm password
     if (request.Password != request.ConfirmPassword)
     {
-      throw new Exception("Passwords do not match");
+      throw new ArgumentException("Passwords do not match");
     }
 
     // Validate password length
     if (request.Password.Length < 6)
     {
-      throw new Exception("Password must be at least 6 characters long");
+      throw new ArgumentException("Password must be at least 6 characters long");
     }
 
     // Create a new AppUser entity and set its properties
@@ -89,8 +68,8 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
     {
       Email = request.Email,
       PasswordHash = passwordHasher.HashPassword(request.Password),
-      FirstName = request.firstName,
-      LastName = request.lastName,
+      FirstName = request.FirstName,
+      LastName = request.LastName,
       Role = request.Role ?? "Student",
       IsActive = true,
     };
@@ -99,28 +78,7 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
     context.AppUsers.Add(newUser);
     await context.SaveChangesAsync(cancellationToken);
 
-    // Generate access token and refresh token for the newly registered user
-    string accessToken = jwtTokenGenerator.GenerateToken(newUser);
-    string refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-
-    // Create a new RefreshToken entity and set its properties
-    var refreshTokenEntity = new RefreshToken
-    {
-      UserId = newUser.Id,
-      Token = refreshToken,
-      ExpiresAt = DateTime.UtcNow.AddDays(7),
-      IsRevoked = false,
-    };
-
-    // Add the refresh token entity to the database context and save changes
-    context.RefreshTokens.Add(refreshTokenEntity);
-    await context.SaveChangesAsync(cancellationToken);
-
-    // Create a UserDto object to include user information in the response
-    UserDto userDto = new UserDto(newUser.Id, newUser.Email, newUser.FirstName, newUser.LastName, newUser.Role, newUser.IsActive, newUser.CreatedAt, newUser.UpdatedAt);
-
-    // Return the authentication response with the generated tokens and user information
-    return new AuthResponse(AccessToken: accessToken, RefreshToken: refreshToken, TokenType: "Bearer", ExpiresIn: 3600, User: userDto);
+    return await GenerateAuthResponseAsync(newUser, cancellationToken);
   }
 
   public async Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -130,9 +88,35 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 
     // Check if user found
     if (user is null)
-      throw new Exception("User not found");
+      throw new KeyNotFoundException("User not found");
 
     // Return the user profile info
     return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
+  }
+
+  private async Task<AuthResponse> GenerateAuthResponseAsync(AppUser user, CancellationToken cancellationToken)
+  {
+    // Generate access token and refresh token
+    string accessToken = jwtTokenGenerator.GenerateToken(user);
+    string refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+    // Create a new RefreshToken entity and set its properties
+    var refreshTokenEntity = new RefreshToken
+    {
+      UserId = user.Id,
+      Token = refreshToken,
+      ExpiresAt = DateTime.UtcNow.AddDays(7),
+      IsRevoked = false
+    };
+
+    // Add the refresh token entity to the database context and save changes
+    context.RefreshTokens.Add(refreshTokenEntity);
+    await context.SaveChangesAsync(cancellationToken);
+
+    // Create a UserDto object to include user information in the response
+    var userDto = new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
+
+    // Return the authentication response with the generated tokens and user information
+    return new AuthResponse(accessToken, refreshToken, "Bearer", 3600, userDto);
   }
 }

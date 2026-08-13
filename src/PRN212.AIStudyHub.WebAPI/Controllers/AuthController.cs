@@ -33,7 +33,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
       return Unauthorized(new { ex.Message });
     }
-    catch (Exception ex)
+    catch (ArgumentException ex)
     {
       return BadRequest(new { ex.Message });
     }
@@ -61,7 +61,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
       return Conflict(new { ex.Message });
     }
-    catch (Exception ex)
+    catch (ArgumentException ex)
     {
       return BadRequest(new { ex.Message });
     }
@@ -76,7 +76,7 @@ public class AuthController(IAuthService authService) : ControllerBase
   [Authorize]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<IActionResult> GetCurrentUserAsync(CancellationToken cancellationToken)
   {
     try
@@ -92,6 +92,10 @@ public class AuthController(IAuthService authService) : ControllerBase
       var result = await _authService.GetCurrentUserAsync(userId, cancellationToken);
 
       return Ok(result);
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new { ex.Message });
     }
     catch (Exception ex)
     {
