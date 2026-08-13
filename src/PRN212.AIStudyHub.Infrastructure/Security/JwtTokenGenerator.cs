@@ -35,7 +35,7 @@ public class JwtTokenGenerator(IOptions<JwtSettings> jwtOptions) : IJwtTokenGene
       Subject = new ClaimsIdentity(claims),
       Issuer = _jwtSettings.Issuer,
       Audience = _jwtSettings.Audience,
-      Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpiryMinutes / 60.0),
+      Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
       SigningCredentials = new SigningCredentials(
         new SymmetricSecurityKey(key),
         SecurityAlgorithms.HmacSha256Signature)
