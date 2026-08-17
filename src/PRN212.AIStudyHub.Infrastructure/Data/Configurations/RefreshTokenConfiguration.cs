@@ -13,7 +13,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     builder.Property(r => r.Token).IsRequired().HasMaxLength(256);
 
     builder.HasOne(r => r.User)
-           .WithMany()
+           .WithMany(u => u.RefreshTokens)
            .HasForeignKey(r => r.UserId)
            .OnDelete(DeleteBehavior.Cascade);
   }

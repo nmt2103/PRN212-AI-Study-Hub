@@ -20,4 +20,11 @@
     <PackageReference Include="System.Net.Http.Json" Version="10.0.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\PRN212.AIStudyHub.Application\PRN212.AIStudyHub.Application.csproj" />
+    <ProjectReference Include="..\src\PRN212.AIStudyHub.Domain\PRN212.AIStudyHub.Domain.csproj" />
+    <ProjectReference Include="..\src\PRN212.AIStudyHub.Infrastructure\PRN212.AIStudyHub.Infrastructure.csproj" />
+    <ProjectReference Include="..\src\PRN212.AIStudyHub.WebAPI\PRN212.AIStudyHub.WebAPI.csproj" />
+  </ItemGroup>
+
 </Project>
