@@ -23,6 +23,12 @@ public class AistudyHubDbContext : DbContext, IAppDbContext
   {
     base.OnModelCreating(modelBuilder);
 
+    // Map all DbSets to singular table names (matching Entity names)
+    foreach (var entity in modelBuilder.Model.GetEntityTypes())
+    {
+      entity.SetTableName(entity.ClrType.Name);
+    }
+
     modelBuilder.ApplyConfigurationsFromAssembly(typeof(AistudyHubDbContext).Assembly);
   }
 }

@@ -1,5 +1,5 @@
 namespace PRN212.AIStudyHub.Domain.Entities;
-
+using System.ComponentModel.DataAnnotations.Schema;
 public class RefreshToken
 {
   public Guid Id { get; private set; }
@@ -9,7 +9,8 @@ public class RefreshToken
   public bool IsRevoked { get; set; } = false;
   public DateTime CreatedAt { get; private set; }
 
-  public virtual AppUser User { get; set; } = null!;
+    [ForeignKey("UserId")]
+    public virtual AppUser User { get; set; } = null!;
 
   public RefreshToken()
   {
