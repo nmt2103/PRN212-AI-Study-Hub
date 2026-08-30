@@ -1,19 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace PRN212.AIStudyHub.Domain.Entities;
 
-public class DocumentSummary
+public partial class DocumentSummary
 {
-  public Guid Id { get; private set; }
-  public Guid DocumentId { get; set; }
-  public string SummaryContent { get; set; } = string.Empty;
-  public string? KeyTakeaways { get; set; }
-  public DateTime CreatedAt { get; private set; }
-  public DateTime? UpdatedAt { get; set; }
+    public Guid Id { get; set; }
 
-  public virtual Document Document { get; set; } = null!;
+    public Guid DocumentId { get; set; }
 
-  public DocumentSummary()
-  {
-    Id = Guid.CreateVersion7();
-    CreatedAt = DateTime.UtcNow;
-  }
+    public string SummaryContent { get; set; } = null!;
+
+    public string? KeyTakeaways { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual Document Document { get; set; } = null!;
 }

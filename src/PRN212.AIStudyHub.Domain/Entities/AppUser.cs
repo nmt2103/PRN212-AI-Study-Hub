@@ -1,25 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace PRN212.AIStudyHub.Domain.Entities;
 
-public class AppUser
+public partial class AppUser
 {
-  public Guid Id { get; private set; }
-  public string Email { get; set; } = string.Empty;
-  public string PasswordHash { get; set; } = string.Empty;
-  public string FirstName { get; set; } = string.Empty;
-  public string LastName { get; set; } = string.Empty;
-  public string Role { get; set; } = "Student";
-  public bool IsActive { get; set; } = true;
-  public DateTime CreatedAt { get; private set; }
-  public DateTime? UpdatedAt { get; set; }
+    public Guid Id { get; set; }
 
-  public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
-  public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
-  public virtual ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
-  public virtual ICollection<FlashcardSet> FlashcardSets { get; set; } = new List<FlashcardSet>();
+    public string Email { get; set; } = null!;
 
-  public AppUser()
-  {
-    Id = Guid.CreateVersion7();
-    CreatedAt = DateTime.UtcNow;
-  }
+    public string PasswordHash { get; set; } = null!;
+
+    public string FirstName { get; set; } = null!;
+
+    public string LastName { get; set; } = null!;
+
+    public string Role { get; set; } = null!;
+
+    public bool IsActive { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<ChatSession> ChatSession { get; set; } = new List<ChatSession>();
+
+    public virtual ICollection<Document> Document { get; set; } = new List<Document>();
+
+    public virtual ICollection<FlashcardSet> FlashcardSet { get; set; } = new List<FlashcardSet>();
+
+    public virtual ICollection<RefreshToken> RefreshToken { get; set; } = new List<RefreshToken>();
 }

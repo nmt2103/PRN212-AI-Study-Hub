@@ -1,21 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace PRN212.AIStudyHub.Domain.Entities;
 
-public class ChatSession
+public partial class ChatSession
 {
-  public Guid Id { get; private set; }
-  public Guid UserId { get; set; }
-  public string Title { get; set; } = string.Empty;
-  public DateTime CreatedAt { get; private set; }
-  public DateTime? UpdatedAt { get; set; }
+    public Guid Id { get; set; }
 
-  // Navigation Properties
-  public virtual AppUser User { get; set; } = null!;
-  public virtual ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
-  public virtual ICollection<ChatSessionDocument> SessionDocuments { get; set; } = new List<ChatSessionDocument>();
+    public Guid UserId { get; set; }
 
-  public ChatSession()
-  {
-    Id = Guid.CreateVersion7();
-    CreatedAt = DateTime.UtcNow;
-  }
+    public string Title { get; set; } = null!;
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<ChatMessage> ChatMessage { get; set; } = new List<ChatMessage>();
+
+    public virtual ICollection<ChatSessionDocument> ChatSessionDocument { get; set; } = new List<ChatSessionDocument>();
+
+    public virtual AppUser User { get; set; } = null!;
 }
