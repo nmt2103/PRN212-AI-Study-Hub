@@ -1,33 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace PRN212.AIStudyHub.Domain.Entities;
 
-public class Document
+public partial class Document
 {
-  public Guid Id { get; private set; }
-  public Guid UserId { get; set; }
-  public Guid SubjectId { get; set; }
-  public string Title { get; set; } = string.Empty;
-  public string FileName { get; set; } = string.Empty;
-  public string StoragePath { get; set; } = string.Empty;
-  public long FileSize { get; set; }
-  public string FileExtension { get; set; } = string.Empty;
-  public string ContentType { get; set; } = string.Empty;
-  public DateTime UploadedAt { get; private set; }
-  public bool IsCloudStored { get; set; } = false;
-  public string? CloudPublicId { get; set; }
-  public bool IsPublic { get; set; } = false;
-  public string ProcessingStatus { get; set; } = "Pending";
-  public bool IsDeleted { get; set; } = false;
-  public DateTime? DeletedAt { get; set; }
+    public Guid Id { get; set; }
 
-  public virtual AppUser User { get; set; } = null!;
-  public virtual Subject Subject { get; set; } = null!;
-  public virtual DocumentSummary? Summary { get; set; }
-  public virtual ICollection<ChatSessionDocument> SessionDocuments { get; set; } = new List<ChatSessionDocument>();
-  public virtual ICollection<FlashcardSet> FlashcardSets { get; set; } = new List<FlashcardSet>();
+    public Guid UserId { get; set; }
 
-  public Document()
-  {
-    Id = Guid.CreateVersion7();
-    UploadedAt = DateTime.UtcNow;
-  }
+    public Guid SubjectId { get; set; }
+
+    public string Title { get; set; } = null!;
+
+    public string FileName { get; set; } = null!;
+
+    public string StoragePath { get; set; } = null!;
+
+    public long FileSize { get; set; }
+
+    public string FileExtension { get; set; } = null!;
+
+    public string ContentType { get; set; } = null!;
+
+    public DateTime UploadedAt { get; set; }
+
+    public bool IsCloudStored { get; set; }
+
+    public string? CloudPublicId { get; set; }
+
+    public bool IsPublic { get; set; }
+
+    public string ProcessingStatus { get; set; } = null!;
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+
+    public virtual ICollection<ChatSessionDocument> ChatSessionDocument { get; set; } = new List<ChatSessionDocument>();
+
+    public virtual DocumentSummary? DocumentSummary { get; set; }
+
+    public virtual ICollection<FlashcardSet> FlashcardSet { get; set; } = new List<FlashcardSet>();
+
+    public virtual Subject Subject { get; set; } = null!;
+
+    public virtual AppUser User { get; set; } = null!;
 }

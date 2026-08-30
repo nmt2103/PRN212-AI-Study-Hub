@@ -1,16 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace PRN212.AIStudyHub.Domain.Entities;
 
-public class ChatSessionDocument
+public partial class ChatSessionDocument
 {
-  public Guid SessionId { get; set; }
-  public Guid DocumentId { get; set; }
-  public DateTime AttachedAt { get; private set; }
+    public Guid SessionId { get; set; }
 
-  public virtual ChatSession ChatSession { get; set; } = null!;
-  public virtual Document Document { get; set; } = null!;
+    public Guid DocumentId { get; set; }
 
-  public ChatSessionDocument()
-  {
-    AttachedAt = DateTime.UtcNow;
-  }
+    public DateTime AttachedAt { get; set; }
+
+    public virtual Document Document { get; set; } = null!;
+
+    public virtual ChatSession Session { get; set; } = null!;
 }
