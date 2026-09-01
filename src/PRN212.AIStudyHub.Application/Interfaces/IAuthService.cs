@@ -14,6 +14,10 @@ public interface IAuthService
   /// <exception cref="InvalidOperationException">Thrown when credentials are invalid or the account is currently inactive.</exception>
   Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 
+  Task<GoogleLoginResult> GoogleLoginAsync(GoogleLoginRequest request);
+
+  Task<AuthResponse> CompleteGoogleRegistrationAsync(CompleteGoogleRegistrationRequest request, string tempToken);
+
   /// <summary>
   /// Registers a new user account in the system and automatically authenticates them upon success.
   /// </summary>
@@ -22,7 +26,15 @@ public interface IAuthService
   /// <returns>An <see cref="AuthResponse"/> containing the JWT access token, refresh token, and the newly created user profile.</returns>
   /// <exception cref="Exception">Thrown when input validation fails, passwords do not match, or password is too short.</exception>
   /// <exception cref="InvalidOperationException">Thrown when the provided email is already registered in the system.</exception>
-  Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
+  Task<string> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
+
+  /// <summary>
+  /// Verifies the OTP sent to the user's email and saves the user to the database if valid.
+  /// </summary>
+  /// <param name="request">The verification request containing email and OTP.</param>
+  /// <param name="cancellationToken">A cancellation token.</param>
+  /// <returns>A success message indicating registration is complete.</returns>
+  Task<string> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken cancellationToken = default);
 
   /// <summary>
   /// Retrieves the profile information of the currently authenticated user by their unique identifier.

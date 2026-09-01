@@ -26,6 +26,8 @@ builder.Services.Configure<JwtSettings>(
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddMemoryCache();
 
 // =========================================================================
 // JWT AUTHENTICATION CONFIGURATION
