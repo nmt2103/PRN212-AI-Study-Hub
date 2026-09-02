@@ -44,4 +44,72 @@ public class JwtTokenGenerator(IOptions<JwtSettings> jwtOptions) : IJwtTokenGene
     var token = tokenHandler.CreateToken(tokenDescriptor);
     return tokenHandler.WriteToken(token);
   }
+
+  public string GenerateTemporaryToken(string email, string firstName, string lastName)
+  {
+    var secretKey = _jwtSettings.Secret;
+    if (string.IsNullOrEmpty(secretKey))
+    {
+      throw new InvalidOperationException("JWT secret key is not configured.");
+    }
+
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var key = System.Text.Encoding.UTF8.GetBytes(secretKey);
+
+    var claims = new List<Claim>
+    {
+      new(ClaimTypes.Email, email),
+      new(ClaimTypes.GivenName, firstName),
+      new(ClaimTypes.Surname, lastName),
+      new("Purpose", "GoogleOnboarding")
+    };
+
+    var tokenDescriptor = new SecurityTokenDescriptor
+    {
+      Subject = new ClaimsIdentity(claims),
+      Issuer = _jwtSettings.Issuer,
+      Audience = _jwtSettings.Audience,
+      Expires = DateTime.UtcNow.AddMinutes(5), // 5 minutes TTL
+      SigningCredentials = new SigningCredentials(
+        new SymmetricSecurityKey(key),
+        SecurityAlgorithms.HmacSha256Signature)
+    };
+
+    var token = tokenHandler.CreateToken(tokenDescriptor);
+    return tokenHandler.WriteToken(token);
+  }
+
+  public ClaimsPrincipal? ValidateTemporaryToken(string token)
+  {
+    var secretKey = _jwtSettings.Secret;
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var key = System.Text.Encoding.UTF8.GetBytes(secretKey!);
+
+    try
+    {
+      var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+      {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = _jwtSettings.Issuer,
+        ValidateAudience = true,
+        ValidAudience = _jwtSettings.Audience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+      }, out SecurityToken validatedToken);
+
+      // Check Purpose claim
+      if (!principal.HasClaim(c => c.Type == "Purpose" && c.Value == "GoogleOnboarding"))
+      {
+        return null;
+      }
+
+      return principal;
+    }
+    catch
+    {
+      return null;
+    }
+  }
 }
