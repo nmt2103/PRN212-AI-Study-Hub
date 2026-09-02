@@ -5,10 +5,15 @@ using PRN212.AIStudyHub.Application.Interfaces.Security;
 using PRN212.AIStudyHub.Domain.Entities;
 using System.Security.Cryptography;
 using PRN212.AIStudyHub.Application.Utils;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Google.Apis.Auth;
+using BCrypt.Net;
 
 namespace PRN212.AIStudyHub.Application.Services;
 
-public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator) : IAuthService
+public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, IMemoryCache cache, IEmailService emailService, IConfiguration config) : IAuthService
 {
     public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
@@ -42,7 +47,7 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
         return await GenerateAuthResponseAsync(user, cancellationToken);
     }
 
-    public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<string> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         // Validate the input parameters
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.ConfirmPassword) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
@@ -88,22 +93,62 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
             throw new ArgumentException("Password must be at least 6 characters long");
         }
 
-        // Create a new AppUser entity and set its properties
+        // Random OTP with 6 index
+        var otp = new Random().Next(100000, 999999).ToString();
+
+        // Save to cache memmory (expired in 5 minutes)
+        var cacheKey = $"OTP_{request.Email}";
+        var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
+        cache.Set(cacheKey, new OtpCacheEntry(request, otp), cacheEntryOptions);
+
+        // Send mail to user
+        var subject = "Xác nhận đăng ký tài khoản AI Study Hub";
+        var body = $"<h3>Chào {request.FirstName},</h3><p>Mã OTP xác nhận đăng ký tài khoản của bạn là: <strong>{otp}</strong></p><p>Mã này sẽ hết hạn sau 5 phút.</p>";
+        await emailService.SendEmailAsync(request.Email, subject, body);
+
+        return "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư rác).";
+    }
+
+    public async Task<string> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken cancellationToken = default)
+    {
+        var cacheKey = $"OTP_{request.Email}";
+
+        if (!cache.TryGetValue(cacheKey, out OtpCacheEntry? cachedEntry) || cachedEntry is null)
+        {
+            throw new InvalidOperationException("OTP code has expired");
+        }
+
+        if (cachedEntry.Otp != request.Otp)
+        {
+            throw new ArgumentException("OTP code incorrect");
+        }
+
+        var registerRequest = cachedEntry.Request;
+
+        // Check database again to ensure thread-safety / state consistency
+        var existingEmail = await context.AppUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Email == registerRequest.Email, cancellationToken);
+        if (existingEmail is not null)
+        {
+            throw new InvalidOperationException("Email already exists");
+        }
+
         var newUser = new AppUser
         {
-            Email = request.Email,
-            PasswordHash = passwordHasher.HashPassword(request.Password),
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Role = request.Role ?? "Student",
+            Email = registerRequest.Email,
+            PasswordHash = passwordHasher.HashPassword(registerRequest.Password),
+            FirstName = registerRequest.FirstName,
+            LastName = registerRequest.LastName,
+            Role = registerRequest.Role ?? "Student",
             IsActive = true,
         };
 
-        // Add the new user to the database and save changes
         context.AppUsers.Add(newUser);
         await context.SaveChangesAsync(cancellationToken);
 
-        return await GenerateAuthResponseAsync(newUser, cancellationToken);
+        // Clear cache
+        cache.Remove(cacheKey);
+
+        return "Xác nhận OTP thành công! Tài khoản của bạn đã được tạo, vui lòng đăng nhập.";
     }
 
     public async Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -143,5 +188,123 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 
         // Return the authentication response with the generated tokens and user information
         return new AuthResponse(accessToken, refreshToken, "Bearer", 3600, userDto);
+    }
+
+    public async Task<GoogleLoginResult> GoogleLoginAsync(GoogleLoginRequest req)
+    {
+        var accessToken = req.GetTokenChecked();
+
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            throw new InvalidOperationException("Backend can't find the token");
+        }
+
+        string userEmail = "";
+        string userName = "";
+        string firstName = "";
+        string lastName = "";
+
+        if (accessToken.StartsWith("ya29"))
+        {
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/userinfo?access_token={accessToken}");
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new UnauthorizedAccessException("Invalid Google Access Token");
+            }
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var docs = System.Text.Json.JsonDocument.Parse(jsonResponse);
+            var root = docs.RootElement;
+
+            userEmail = root.TryGetProperty("email", out var emailEl) ? emailEl.GetString() ?? "" : "";
+            userName = root.TryGetProperty("name", out var nameEl) ? nameEl.GetString() ?? "" : "";
+            firstName = root.TryGetProperty("given_name", out var givenNameEl) ? givenNameEl.GetString() ?? userName : userName;
+            lastName = root.TryGetProperty("family_name", out var familyNameEl) ? familyNameEl.GetString() ?? "" : "";
+        }
+        else
+        {
+            var clientId = config["Google:ClientId"];
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new List<string>() { clientId ?? string.Empty }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(accessToken, settings);
+            userEmail = payload.Email;
+            userName = payload.Name;
+            firstName = payload.GivenName ?? userName;
+            lastName = payload.FamilyName ?? "";
+        }
+
+        var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == userEmail);
+
+        if (userInDb != null)
+        {
+            // User exists, return standard auth response
+            return new GoogleLoginResult 
+            { 
+                IsNewUser = false, 
+                AuthResponse = await GenerateAuthResponseAsync(userInDb, default) 
+            };
+        }
+        else
+        {
+            // New user, generate temporary token
+            var tempToken = jwtTokenGenerator.GenerateTemporaryToken(userEmail, firstName, lastName);
+            return new GoogleLoginResult
+            {
+                IsNewUser = true,
+                TemporaryToken = tempToken,
+                Message = "Please choose your role to complete registation."
+            };
+        }
+    }
+
+    public async Task<AuthResponse> CompleteGoogleRegistrationAsync(CompleteGoogleRegistrationRequest request, string tempToken)
+    {
+        var principal = jwtTokenGenerator.ValidateTemporaryToken(tempToken);
+        if (principal == null)
+        {
+            throw new UnauthorizedAccessException("Temporary token is invalid or expired.");
+        }
+
+        var email = principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        var firstName = principal.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? "";
+        var lastName = principal.FindFirst(System.Security.Claims.ClaimTypes.Surname)?.Value ?? "";
+
+        if (string.IsNullOrEmpty(email))
+        {
+            throw new InvalidOperationException("Invalid token payload.");
+        }
+
+        if (request.Role != "Student" && request.Role != "Lecturer")
+        {
+            throw new ArgumentException("Invalid role.");
+        }
+
+        // Double check DB
+        var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == email);
+        if (userInDb != null)
+        {
+            return await GenerateAuthResponseAsync(userInDb, default);
+        }
+
+        string randomDummyPassword = Guid.NewGuid().ToString();
+        string hashedDummyPassword = BCrypt.Net.BCrypt.HashPassword(randomDummyPassword);
+
+        var newUser = new AppUser
+        {
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
+            PasswordHash = hashedDummyPassword,
+            Role = request.Role,
+            IsActive = true
+        };
+
+        context.AppUsers.Add(newUser);
+        await context.SaveChangesAsync(default);
+
+        return await GenerateAuthResponseAsync(newUser, default);
     }
 }
