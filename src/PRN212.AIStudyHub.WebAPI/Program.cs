@@ -8,6 +8,8 @@ using PRN212.AIStudyHub.Application.Interfaces.Security;
 using PRN212.AIStudyHub.Application.Services;
 using PRN212.AIStudyHub.Infrastructure.Data;
 using PRN212.AIStudyHub.Infrastructure.Security;
+using PRN212.AIStudyHub.Infrastructure.Cloud;
+using PRN212.AIStudyHub.Application.Services.Cloud;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +24,14 @@ builder.Services.AddScoped<IAppDbContext>(provider =>
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));
+builder.Services.Configure<CloudinarySettings>(
+  builder.Configuration.GetSection(CloudinarySettings.SectionName));
 
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddMemoryCache();
 
