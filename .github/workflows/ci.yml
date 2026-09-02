@@ -24,4 +24,5 @@ jobs:
       run: dotnet restore
 
     - name: Build Solution
-      run: dotnet build --configuration Release --no-restore
+      # run: dotnet build --configuration Release --no-restore
+      run: dotnet build src/PRN212.AIStudyHub.WebAPI/
