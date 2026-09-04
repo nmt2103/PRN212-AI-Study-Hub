@@ -44,4 +44,8 @@ public interface IAuthService
   /// <returns>A <see cref="UserDto"/> representing the user's profile details.</returns>
   /// <exception cref="Exception">Thrown when the user with the specified ID cannot be found in the database.</exception>
   Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default);
+
+  Task<string> ForgotPassword(ForgotPasswordRequestDto request);
+
+  Task<string> ResetPassword(ResetPasswordDto request);
 }
