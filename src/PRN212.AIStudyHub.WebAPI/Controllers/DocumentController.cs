@@ -32,6 +32,10 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<IActionResult> UploadAsync([FromForm] UploadDocumentRequest request, CancellationToken cancellationToken)
   {
+    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+      return Unauthorized(new { Message = "Unauthorized" });
+
     if (request.File == null || request.File.Length == 0)
       return BadRequest(new { Message = "Empty file" });
 
@@ -44,11 +48,6 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 
     try
     {
-      var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-      if (!Guid.TryParse(userIdStr, out Guid userId))
-        return Unauthorized(new { Message = "Unauthorized" });
-
       using var fileStream = request.File.OpenReadStream();
 
       var command = new UploadDocumentCommand(
