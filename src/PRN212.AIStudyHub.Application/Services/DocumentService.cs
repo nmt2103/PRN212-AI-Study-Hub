@@ -19,6 +19,7 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 
     var newDocument = new Document
     {
+      Id = Guid.CreateVersion7(),
       UserId = userId,
       SubjectId = request.SubjectId,
       Title = request.Title,
@@ -27,9 +28,12 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
       FileSize = request.FileSize,
       FileExtension = Path.GetExtension(request.FileName),
       ContentType = request.ContentType,
+      UploadedAt = DateTime.UtcNow,
       IsCloudStored = true,
       CloudPublicId = cloudUploadResult.PublicId,
       IsPublic = request.IsPublic,
+      ProcessingStatus = "Pending",
+      IsDeleted = false
     };
 
     context.Documents.Add(newDocument);

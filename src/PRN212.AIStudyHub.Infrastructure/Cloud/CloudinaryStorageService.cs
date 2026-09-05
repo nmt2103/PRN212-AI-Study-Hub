@@ -2,6 +2,7 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Options;
 using PRN212.AIStudyHub.Application.DTOs.Cloud;
+using PRN212.AIStudyHub.Application.Exceptions;
 using PRN212.AIStudyHub.Application.Services.Cloud;
 
 namespace PRN212.AIStudyHub.Infrastructure.Cloud;
@@ -20,21 +21,38 @@ public class CloudinaryStorageService : ICloudStorageService
 
   public async Task<CloudUploadResult> UploadRawFileAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default)
   {
-    var uploadParams = new RawUploadParams
+    try
     {
-      File = new FileDescription(fileName, fileStream),
-      Folder = _folder,
-      UseFilename = true,
-      UniqueFilename = true
-    };
+      var uploadParams = new RawUploadParams
+      {
+        File = new FileDescription(fileName, fileStream),
+        Folder = _folder,
+        UseFilename = true,
+        UniqueFilename = true
+      };
 
-    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+      var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-    if (uploadResult.Error != null)
-    {
-      throw new Exception($"Cloudinary Upload Failed: \n{uploadResult.Error.Message}");
+      if (uploadResult.Error != null)
+      {
+        throw new CloudStorageException($"Cloudinary Upload Failed: {uploadResult.Error.Message}");
+      }
+
+      return new CloudUploadResult(
+        PublicId: uploadResult.PublicId,
+        Url: uploadResult.Url.ToString(),
+        SecureUrl: uploadResult.SecureUrl.ToString(),
+        Bytes: uploadResult.Bytes,
+        Format: uploadResult.Format ?? "unknown"
+      );
     }
-
-    return new CloudUploadResult(PublicId: uploadResult.PublicId, Url: uploadResult.Url.ToString(), SecureUrl: uploadResult.SecureUrl.ToString(), Bytes: uploadResult.Bytes, Format: uploadResult.Format ?? "unknown");
+    catch (CloudStorageException)
+    {
+      throw;
+    }
+    catch (Exception ex)
+    {
+      throw new CloudStorageException($"Failed to connect to Cloudinary storage: {ex.Message}", ex);
+    }
   }
 }
