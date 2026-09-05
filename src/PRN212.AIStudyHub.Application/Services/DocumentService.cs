@@ -10,35 +10,35 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 {
   public async Task<DocumentResponseDto> UploadDocumentAsync(UploadDocumentCommand request, Guid userId, CancellationToken cancellationToken = default)
   {
-    var isSubjectExist = await context.Subjects.AsNoTracking().AnyAsync(subject => subject.Id == request.SubjectId, cancellationToken);
+	var isSubjectExist = await context.Subjects.AsNoTracking().AnyAsync(subject => subject.Id == request.SubjectId, cancellationToken);
 
-    if (!isSubjectExist)
-      throw new InvalidOperationException("Invalid subject");
+	if (!isSubjectExist)
+	  throw new InvalidOperationException("Invalid subject");
 
-    var cloudUploadResult = await cloudStorageService.UploadRawFileAsync(request.FileStream, request.FileName, cancellationToken);
+	var cloudUploadResult = await cloudStorageService.UploadRawFileAsync(request.FileStream, request.FileName, cancellationToken);
 
-    var newDocument = new Document
-    {
-      Id = Guid.CreateVersion7(),
-      UserId = userId,
-      SubjectId = request.SubjectId,
-      Title = request.Title,
-      FileName = request.FileName,
-      StoragePath = cloudUploadResult.SecureUrl,
-      FileSize = request.FileSize,
-      FileExtension = Path.GetExtension(request.FileName),
-      ContentType = request.ContentType,
-      UploadedAt = DateTime.UtcNow,
-      IsCloudStored = true,
-      CloudPublicId = cloudUploadResult.PublicId,
-      IsPublic = request.IsPublic,
-      ProcessingStatus = "Pending",
-      IsDeleted = false
-    };
+	var newDocument = new Document
+	{
+	  Id = Guid.CreateVersion7(),
+	  UserId = userId,
+	  SubjectId = request.SubjectId,
+	  Title = request.Title,
+	  FileName = request.FileName,
+	  StoragePath = cloudUploadResult.SecureUrl,
+	  FileSize = request.FileSize,
+	  FileExtension = Path.GetExtension(request.FileName),
+	  ContentType = request.ContentType,
+	  UploadedAt = DateTime.UtcNow,
+	  IsCloudStored = true,
+	  CloudPublicId = cloudUploadResult.PublicId,
+	  IsPublic = request.IsPublic,
+	  ProcessingStatus = "Pending",
+	  IsDeleted = false
+	};
 
-    context.Documents.Add(newDocument);
-    await context.SaveChangesAsync(cancellationToken);
+	context.Documents.Add(newDocument);
+	await context.SaveChangesAsync(cancellationToken);
 
-    return new DocumentResponseDto(newDocument.Id, newDocument.Title, newDocument.FileName, newDocument.StoragePath, newDocument.CloudPublicId, newDocument.IsCloudStored, newDocument.FileSize, newDocument.FileExtension, newDocument.ContentType, newDocument.UploadedAt, newDocument.IsPublic, newDocument.SubjectId);
+	return new DocumentResponseDto(newDocument.Id, newDocument.Title, newDocument.FileName, newDocument.StoragePath, newDocument.CloudPublicId, newDocument.IsCloudStored, newDocument.FileSize, newDocument.FileExtension, newDocument.ContentType, newDocument.UploadedAt, newDocument.IsPublic, newDocument.SubjectId);
   }
 }

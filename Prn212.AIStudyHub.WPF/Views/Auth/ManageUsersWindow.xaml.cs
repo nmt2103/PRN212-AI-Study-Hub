@@ -14,49 +14,49 @@ public partial class ManageUsersWindow : Window
 
   public ManageUsersWindow()
   {
-    InitializeComponent();
-    Loaded += ManageUsersWindow_Loaded;
+	InitializeComponent();
+	Loaded += ManageUsersWindow_Loaded;
   }
 
   private async void ManageUsersWindow_Loaded(object sender, RoutedEventArgs e)
   {
-    await LoadUsersAsync();
+	await LoadUsersAsync();
   }
 
   private async Task LoadUsersAsync()
   {
-    try
-    {
-      var students = await _adminService.GetStudentsAsync();
-      dgUsers.ItemsSource = students;
-    }
-    catch (Exception ex)
-    {
-      MessageBox.Show($"Lỗi khi tải danh sách người dùng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-    }
+	try
+	{
+	  var students = await _adminService.GetStudentsAsync();
+	  dgUsers.ItemsSource = students;
+	}
+	catch (Exception ex)
+	{
+	  MessageBox.Show($"Lỗi khi tải danh sách người dùng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+	}
   }
 
   private async void BtnToggleStatus_Click(object sender, RoutedEventArgs e)
   {
-    if (sender is Button btn && btn.DataContext is AppUser selectedUser)
-    {
-      try
-      {
-        string action = selectedUser.IsActive ? "khóa" : "mở khóa";
-        var confirm = MessageBox.Show($"Bạn có chắc chắn muốn {action} tài khoản của {selectedUser.LastName} {selectedUser.FirstName} không?",
-                                      "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+	if (sender is Button btn && btn.DataContext is AppUser selectedUser)
+	{
+	  try
+	  {
+		string action = selectedUser.IsActive ? "khóa" : "mở khóa";
+		var confirm = MessageBox.Show($"Bạn có chắc chắn muốn {action} tài khoản của {selectedUser.LastName} {selectedUser.FirstName} không?",
+									  "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
-        if (confirm == MessageBoxResult.Yes)
-        {
-          _adminService.ToggleUserStatus(selectedUser.Id);
-          MessageBox.Show($"Đã {action} tài khoản thành công.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-          await LoadUsersAsync();
-        }
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show($"Lỗi khi thay đổi trạng thái: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-      }
-    }
+		if (confirm == MessageBoxResult.Yes)
+		{
+		  _adminService.ToggleUserStatus(selectedUser.Id);
+		  MessageBox.Show($"Đã {action} tài khoản thành công.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+		  await LoadUsersAsync();
+		}
+	  }
+	  catch (Exception ex)
+	  {
+		MessageBox.Show($"Lỗi khi thay đổi trạng thái: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+	  }
+	}
   }
 }
