@@ -8,9 +8,9 @@ namespace Prn212.AIStudyHub.WPF
   /// </summary>
   public partial class App : Application
   {
-    /// <summary>
-    /// Tài khoản đang đăng nhập. Được gán khi Login thành công, xóa (null) khi Đăng xuất.
-    /// </summary>
-    public static AppUser? CurrentUser { get; set; }
+	/// <summary>
+	/// Tài khoản đang đăng nhập. Được gán khi Login thành công, xóa (null) khi Đăng xuất.
+	/// </summary>
+	public static AppUser? CurrentUser { get; set; }
   }
 }

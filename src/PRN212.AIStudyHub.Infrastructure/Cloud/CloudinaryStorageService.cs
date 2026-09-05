@@ -14,45 +14,45 @@ public class CloudinaryStorageService : ICloudStorageService
 
   public CloudinaryStorageService(IOptions<CloudinarySettings> config)
   {
-    var account = new Account(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
-    _cloudinary = new Cloudinary(account);
-    _folder = config.Value.Folder;
+	var account = new Account(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
+	_cloudinary = new Cloudinary(account);
+	_folder = config.Value.Folder;
   }
 
   public async Task<CloudUploadResult> UploadRawFileAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default)
   {
-    try
-    {
-      var uploadParams = new RawUploadParams
-      {
-        File = new FileDescription(fileName, fileStream),
-        Folder = _folder,
-        UseFilename = true,
-        UniqueFilename = true
-      };
+	try
+	{
+	  var uploadParams = new RawUploadParams
+	  {
+		File = new FileDescription(fileName, fileStream),
+		Folder = _folder,
+		UseFilename = true,
+		UniqueFilename = true
+	  };
 
-      var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+	  var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-      if (uploadResult.Error != null)
-      {
-        throw new CloudStorageException($"Cloudinary Upload Failed: {uploadResult.Error.Message}");
-      }
+	  if (uploadResult.Error != null)
+	  {
+		throw new CloudStorageException($"Cloudinary Upload Failed: {uploadResult.Error.Message}");
+	  }
 
-      return new CloudUploadResult(
-        PublicId: uploadResult.PublicId,
-        Url: uploadResult.Url.ToString(),
-        SecureUrl: uploadResult.SecureUrl.ToString(),
-        Bytes: uploadResult.Bytes,
-        Format: uploadResult.Format ?? "unknown"
-      );
-    }
-    catch (CloudStorageException)
-    {
-      throw;
-    }
-    catch (Exception ex)
-    {
-      throw new CloudStorageException($"Failed to connect to Cloudinary storage: {ex.Message}", ex);
-    }
+	  return new CloudUploadResult(
+		PublicId: uploadResult.PublicId,
+		Url: uploadResult.Url.ToString(),
+		SecureUrl: uploadResult.SecureUrl.ToString(),
+		Bytes: uploadResult.Bytes,
+		Format: uploadResult.Format ?? "unknown"
+	  );
+	}
+	catch (CloudStorageException)
+	{
+	  throw;
+	}
+	catch (Exception ex)
+	{
+	  throw new CloudStorageException($"Failed to connect to Cloudinary storage: {ex.Message}", ex);
+	}
   }
 }
