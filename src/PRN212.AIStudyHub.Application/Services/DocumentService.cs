@@ -64,4 +64,33 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 			)).ToListAsync(cancellationToken);
 		return result;
 	}
+
+	public async Task<DocumentResponseDto> GetDocumentDetailsAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+	{
+		var docs = await context.Documents.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+
+		if (docs == null)
+		{
+			throw new KeyNotFoundException("Document not found");
+		}
+
+		if (docs.UserId != userId && docs.IsPublic == false)
+		{
+			throw new UnauthorizedAccessException("You don't have permission to view this document");
+		}
+
+		return new DocumentResponseDto(
+			docs.Id,
+			docs.Title,
+			docs.FileName,
+			docs.StoragePath,
+			docs.CloudPublicId,
+			docs.IsCloudStored,
+			docs.FileSize,
+			docs.FileExtension,
+			docs.ContentType,
+			docs.UploadedAt,
+			docs.IsPublic,
+			docs.SubjectId);
+	}
 }
