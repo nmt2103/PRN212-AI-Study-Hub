@@ -93,4 +93,65 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 			docs.IsPublic,
 			docs.SubjectId);
 	}
+
+  public async Task<bool> DeleteDocumentAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  {
+		var doc = await context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+
+		if (doc == null)
+		{
+			throw new KeyNotFoundException("Document not found");
+		}
+		if (doc.UserId != userId)
+		{
+			throw new UnauthorizedAccessException("Only the owner can delete this document");
+		}
+
+		doc.IsDeleted = true;
+		doc.DeletedAt = DateTime.UtcNow;
+
+		await context.SaveChangesAsync(cancellationToken);
+		return true;
+  }
+
+  public async Task<DocumentResponseDto> UpdateDocumentAsync(Guid id, Guid userId, UpdateDocumentRequest request, CancellationToken cancellationToken = default)
+  {
+		var docs = await context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+		if (docs == null)
+		{
+			throw new KeyNotFoundException("Document not found");
+		}
+
+		if (docs.UserId != userId)
+		{
+			throw new UnauthorizedAccessException("Only the owner can edit this document");
+		}
+
+		var subjectExist = await context.Subjects.AnyAsync(s => s.Id == request.SubjectId, cancellationToken);
+		if (!subjectExist)
+		{
+			throw new InvalidOperationException("Invalid subject");
+		}
+
+		docs.Title = request.Title;
+		docs.SubjectId = request.SubjectId;
+		docs.IsPublic = request.IsPublic;
+
+		await context.SaveChangesAsync(cancellationToken);
+
+		return new DocumentResponseDto(
+			docs.Id,
+			docs.Title,
+			docs.FileName,
+			docs.StoragePath,
+			docs.CloudPublicId,
+			docs.IsCloudStored,
+			docs.FileSize,
+			docs.FileExtension,
+			docs.ContentType,
+			docs.UploadedAt,
+			docs.IsPublic,
+			docs.SubjectId
+			);
+	}
 }

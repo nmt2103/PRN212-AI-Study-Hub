@@ -135,4 +135,75 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 			return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An unexpected error occurred", Detail = ex.Message });
 		}
 	}
+
+	[HttpPut("{id}")]
+	[ProducesResponseType(typeof(DocumentResponseDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> UpdateDocument([FromRoute] Guid id, [FromBody] UpdateDocumentRequest request, CancellationToken cancellationToken)
+	{
+		var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+		{
+			return Unauthorized(new { Message = "Unauthorized" });
+		}
+
+		try
+		{
+			var result = await documentService.UpdateDocumentAsync(id, userId, request, cancellationToken);
+			return Ok(result);
+		}
+		catch (KeyNotFoundException ex)
+		{
+			return NotFound(new { Message = ex.Message });
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+		}
+		catch (InvalidOperationException ex)
+		{
+			return BadRequest(new { Message = ex.Message });
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "An unexpected error updating document {DocId}", id);
+			return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+		}
+	}
+
+	[HttpDelete("{id}")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> DeleteDocument([FromRoute] Guid id, CancellationToken cancellationToken)
+	{
+		var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+		{
+			return Unauthorized(new { Message = "Unauthorized" });
+		}
+
+		try
+		{
+			await documentService.DeleteDocumentAsync(id, userId, cancellationToken);
+			return NoContent(); // 204 No Content is standard for successful DELETE
+		}
+		catch (KeyNotFoundException ex)
+		{
+			return NotFound(new { Message = ex.Message });
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "An unexpected error deleting document {DocId}", id);
+			return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+		}
+	}
 }
