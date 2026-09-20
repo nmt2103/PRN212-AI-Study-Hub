@@ -34,7 +34,7 @@ namespace PRN212.AIStudyHub.Application.Services
 
 		public async Task<List<SubjectDto>> GetAllSubjectsAsync(CancellationToken cancellationToken = default)
 		{
-			return await context.Subjects.AsNoTracking().OrderBy(s => s.Name).Select(s => new SubjectDto(s.Id, s.Name, s.Description, s.CreatedAt)).ToListAsync(cancellationToken)
+			return await context.Subjects.AsNoTracking().OrderBy(s => s.Name).Select(s => new SubjectDto(s.Id, s.Name, s.Description, s.CreatedAt)).ToListAsync(cancellationToken);
 		}
 	}
 }
