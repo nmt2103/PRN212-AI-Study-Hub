@@ -41,4 +41,56 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 
 	return new DocumentResponseDto(newDocument.Id, newDocument.Title, newDocument.FileName, newDocument.StoragePath, newDocument.CloudPublicId, newDocument.IsCloudStored, newDocument.FileSize, newDocument.FileExtension, newDocument.ContentType, newDocument.UploadedAt, newDocument.IsPublic, newDocument.SubjectId);
   }
+
+  public async Task<List<DocumentItemDto>> GetDocumentAsync(Guid userId, Guid? subjectId = null, CancellationToken cancellationToken = default)
+  {
+	// Find user's file. Which hasn't deleted yet.
+	var query = context.Documents.AsNoTracking().Include(d => d.Subject).Where(d => d.UserId == userId && d.IsDeleted == false);
+
+	if (subjectId.HasValue)
+	{
+	  query = query.Where(d => d.SubjectId == subjectId.Value);
+	}
+
+	var result = await query.OrderByDescending(d => d.UploadedAt).Select(d => new DocumentItemDto(
+		d.Id,
+		d.Title,
+		d.FileName,
+		d.SubjectId,
+		d.Subject.Name,
+		d.UploadedAt,
+		d.ProcessingStatus,
+		d.IsPublic
+		)).ToListAsync(cancellationToken);
+	return result;
+  }
+
+  public async Task<DocumentResponseDto> GetDocumentDetailsAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  {
+	var docs = await context.Documents.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+
+	if (docs == null)
+	{
+	  throw new KeyNotFoundException("Document not found");
+	}
+
+	if (docs.UserId != userId && docs.IsPublic == false)
+	{
+	  throw new UnauthorizedAccessException("You don't have permission to view this document");
+	}
+
+	return new DocumentResponseDto(
+		docs.Id,
+		docs.Title,
+		docs.FileName,
+		docs.StoragePath,
+		docs.CloudPublicId,
+		docs.IsCloudStored,
+		docs.FileSize,
+		docs.FileExtension,
+		docs.ContentType,
+		docs.UploadedAt,
+		docs.IsPublic,
+		docs.SubjectId);
+  }
 }

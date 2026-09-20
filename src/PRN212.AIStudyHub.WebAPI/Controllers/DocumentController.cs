@@ -51,13 +51,13 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	  using var fileStream = request.File.OpenReadStream();
 
 	  var command = new UploadDocumentCommand(
-		FileStream: fileStream,
-		FileName: request.File.FileName,
-		ContentType: request.File.ContentType,
-		FileSize: request.File.Length,
-		Title: request.Title,
-		SubjectId: request.SubjectId,
-		IsPublic: request.IsPublic
+	  FileStream: fileStream,
+	  FileName: request.File.FileName,
+	  ContentType: request.File.ContentType,
+	  FileSize: request.File.Length,
+	  Title: request.Title,
+	  SubjectId: request.SubjectId,
+	  IsPublic: request.IsPublic
 	  );
 
 	  var result = await documentService.UploadDocumentAsync(command, userId, cancellationToken);
@@ -78,6 +78,61 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	{
 	  logger.LogError(ex, "Unexpected error uploading file: {FileName}", request.File.FileName);
 	  return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+	}
+  }
+
+  [HttpGet("get")]
+  [ProducesResponseType(typeof(List<DocumentItemDto>), StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+  public async Task<IActionResult> GetMyDocument([FromQuery] Guid? subjectId, CancellationToken cancellationToken)
+  {
+	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+	{
+	  return Unauthorized(new { message = "Unauthorized" });
+	}
+	try
+	{
+	  var result = await documentService.GetDocumentAsync(userId, subjectId, cancellationToken);
+	  return Ok(result);
+	}
+	catch (Exception ex)
+	{
+	  logger.LogError(ex, "Failed to get list of document from user {userId}", userId);
+	  return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+	}
+  }
+
+  [HttpGet("{id}")]
+  [ProducesResponseType(typeof(DocumentResponseDto), StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status403Forbidden)]
+  public async Task<IActionResult> GetDocumentById([FromRoute] Guid id, CancellationToken cancellationToken)
+  {
+	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+	{
+	  return Unauthorized(new { message = "Unauthorized" });
+	}
+
+	try
+	{
+	  var result = await documentService.GetDocumentDetailsAsync(id, userId, cancellationToken);
+	  return Ok(result);
+	}
+	catch (KeyNotFoundException ex)
+	{
+	  return NotFound(new { message = ex.Message });
+	}
+	catch (UnauthorizedAccessException ex)
+	{
+	  return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+	}
+	catch (Exception ex)
+	{
+	  logger.LogError(ex, "An unexpected error getting document {DocId}", id);
+	  return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An unexpected error occurred", Detail = ex.Message });
 	}
   }
 }
