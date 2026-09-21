@@ -7,7 +7,7 @@ using PRN212.AIStudyHub.Application.Interfaces;
 namespace PRN212.AIStudyHub.WebAPI.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/auth")]
 public class AuthController(IAuthService authService, IMemoryCache memoryCache) : ControllerBase
 {
   private readonly IAuthService _authService = authService;
@@ -24,7 +24,9 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
   [ProducesResponseType(StatusCodes.Status409Conflict)]
-  public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+  public async Task<IActionResult> RegisterAsync(
+		[FromBody] RegisterRequest request,
+		CancellationToken cancellationToken)
   {
 	try
 	{
@@ -52,7 +54,9 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
   [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
+  public async Task<IActionResult> LoginAsync(
+		[FromBody] LoginRequest request,
+		CancellationToken cancellationToken)
   {
 	try
 	{
@@ -77,7 +81,9 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [HttpPost("verify-otp")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  public async Task<IActionResult> VerifyOtpAsync([FromBody] VerifyOtpRequest request, CancellationToken cancellationToken)
+  public async Task<IActionResult> VerifyOtpAsync(
+		[FromBody] VerifyOtpRequest request,
+		CancellationToken cancellationToken)
   {
 	try
 	{
@@ -123,7 +129,8 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
 
 
   [HttpPost("complete-google-registration")]
-  public async Task<IActionResult> CompleteGoogleRegistration([FromBody] CompleteGoogleRegistrationRequest request)
+  public async Task<IActionResult> CompleteGoogleRegistration(
+		[FromBody] CompleteGoogleRegistrationRequest request)
   {
 	try
 	{

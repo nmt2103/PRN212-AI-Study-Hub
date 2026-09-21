@@ -8,14 +8,21 @@ namespace PRN212.AIStudyHub.Application.Services;
 
 public class DocumentService(IAppDbContext context, ICloudStorageService cloudStorageService) : IDocumentService
 {
-  public async Task<DocumentResponseDto> UploadDocumentAsync(UploadDocumentCommand request, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<DocumentResponseDto> UploadDocumentAsync(
+		UploadDocumentCommand request,
+		Guid userId,
+		CancellationToken cancellationToken = default)
   {
-	var isSubjectExist = await context.Subjects.AsNoTracking().AnyAsync(subject => subject.Id == request.SubjectId, cancellationToken);
+	var isSubjectExist = await context.Subjects.AsNoTracking()
+			.AnyAsync(subject => subject.Id == request.SubjectId, cancellationToken);
 
 	if (!isSubjectExist)
 	  throw new InvalidOperationException("Invalid subject");
 
-	var cloudUploadResult = await cloudStorageService.UploadRawFileAsync(request.FileStream, request.FileName, cancellationToken);
+	var cloudUploadResult = await cloudStorageService.UploadRawFileAsync(
+			request.FileStream,
+			request.FileName,
+			cancellationToken);
 
 	var newDocument = new Document
 	{
@@ -39,13 +46,29 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 	context.Documents.Add(newDocument);
 	await context.SaveChangesAsync(cancellationToken);
 
-	return new DocumentResponseDto(newDocument.Id, newDocument.Title, newDocument.FileName, newDocument.StoragePath, newDocument.CloudPublicId, newDocument.IsCloudStored, newDocument.FileSize, newDocument.FileExtension, newDocument.ContentType, newDocument.UploadedAt, newDocument.IsPublic, newDocument.SubjectId);
+	return new DocumentResponseDto(
+		newDocument.Id,
+		newDocument.Title,
+		newDocument.FileName,
+		newDocument.StoragePath,
+		newDocument.CloudPublicId,
+		newDocument.IsCloudStored,
+		newDocument.FileSize,
+		newDocument.FileExtension,
+		newDocument.ContentType,
+		newDocument.UploadedAt,
+		newDocument.IsPublic,
+		newDocument.SubjectId);
   }
 
-  public async Task<List<DocumentItemDto>> GetDocumentAsync(Guid userId, Guid? subjectId = null, CancellationToken cancellationToken = default)
+  public async Task<List<DocumentItemDto>> GetDocumentAsync(
+		Guid userId,
+		Guid? subjectId = null,
+		CancellationToken cancellationToken = default)
   {
 	// Find user's file. Which hasn't deleted yet.
-	var query = context.Documents.AsNoTracking().Include(d => d.Subject).Where(d => d.UserId == userId && d.IsDeleted == false);
+	var query = context.Documents.AsNoTracking()
+			.Include(d => d.Subject).Where(d => d.UserId == userId && d.IsDeleted == false);
 
 	if (subjectId.HasValue)
 	{
@@ -65,9 +88,13 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 	return result;
   }
 
-  public async Task<DocumentResponseDto> GetDocumentDetailsAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<DocumentResponseDto> GetDocumentDetailsAsync(
+		Guid id,
+		Guid userId,
+		CancellationToken cancellationToken = default)
   {
-	var docs = await context.Documents.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+	var docs = await context.Documents.AsNoTracking()
+			.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
 
 	if (docs == null)
 	{
@@ -94,9 +121,13 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 		docs.SubjectId);
   }
 
-  public async Task<bool> DeleteDocumentAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<bool> DeleteDocumentAsync(
+		Guid id,
+		Guid userId,
+		CancellationToken cancellationToken = default)
   {
-	var doc = await context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+	var doc = await context.Documents
+			.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
 
 	if (doc == null)
 	{
@@ -114,9 +145,14 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 	return true;
   }
 
-  public async Task<DocumentResponseDto> UpdateDocumentAsync(Guid id, Guid userId, UpdateDocumentRequest request, CancellationToken cancellationToken = default)
+  public async Task<DocumentResponseDto> UpdateDocumentAsync(
+		Guid id,
+		Guid userId,
+		UpdateDocumentRequest request,
+		CancellationToken cancellationToken = default)
   {
-	var docs = await context.Documents.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+	var docs = await context.Documents.
+			FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
 	if (docs == null)
 	{
 	  throw new KeyNotFoundException("Document not found");

@@ -30,7 +30,9 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   [ProducesResponseType(StatusCodes.Status502BadGateway)]
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-  public async Task<IActionResult> UploadAsync([FromForm] UploadDocumentRequest request, CancellationToken cancellationToken)
+  public async Task<IActionResult> UploadAsync(
+		[FromForm] UploadDocumentRequest request,
+		CancellationToken cancellationToken)
   {
 	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
@@ -72,19 +74,23 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	catch (CloudStorageException ex)
 	{
 	  logger.LogError(ex, "Cloudinary upload failed for file: {FileName}", request.File.FileName);
-	  return StatusCode(StatusCodes.Status502BadGateway, new { Message = "Cloud storage service error", Detail = ex.Message });
+	  return StatusCode(StatusCodes.Status502BadGateway,
+				new { Message = "Cloud storage service error", Detail = ex.Message });
 	}
 	catch (Exception ex)
 	{
 	  logger.LogError(ex, "Unexpected error uploading file: {FileName}", request.File.FileName);
-	  return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+	  return StatusCode(StatusCodes.Status500InternalServerError,
+				new { Message = "An unexpected error occurred", Detail = ex.Message });
 	}
   }
 
   [HttpGet("get")]
   [ProducesResponseType(typeof(List<DocumentItemDto>), StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  public async Task<IActionResult> GetMyDocument([FromQuery] Guid? subjectId, CancellationToken cancellationToken)
+  public async Task<IActionResult> GetMyDocument(
+		[FromQuery] Guid? subjectId,
+		CancellationToken cancellationToken)
   {
 	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
@@ -99,7 +105,8 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	catch (Exception ex)
 	{
 	  logger.LogError(ex, "Failed to get list of document from user {userId}", userId);
-	  return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+	  return StatusCode(StatusCodes.Status500InternalServerError,
+				new { Message = "An unexpected error occurred", Detail = ex.Message });
 	}
   }
 
@@ -132,7 +139,8 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	catch (Exception ex)
 	{
 	  logger.LogError(ex, "An unexpected error getting document {DocId}", id);
-	  return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An unexpected error occurred", Detail = ex.Message });
+	  return StatusCode(StatusCodes.Status500InternalServerError,
+				new { message = "An unexpected error occurred", Detail = ex.Message });
 	}
   }
 
@@ -142,7 +150,10 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
   [ProducesResponseType(StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(StatusCodes.Status403Forbidden)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> UpdateDocument([FromRoute] Guid id, [FromBody] UpdateDocumentRequest request, CancellationToken cancellationToken)
+  public async Task<IActionResult> UpdateDocument(
+		[FromRoute] Guid id,
+		[FromBody] UpdateDocumentRequest request,
+		CancellationToken cancellationToken)
   {
 	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
@@ -170,7 +181,8 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	catch (Exception ex)
 	{
 	  logger.LogError(ex, "An unexpected error updating document {DocId}", id);
-	  return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+	  return StatusCode(StatusCodes.Status500InternalServerError,
+				new { Message = "An unexpected error occurred", Detail = ex.Message });
 	}
   }
 
@@ -203,7 +215,8 @@ public class DocumentController(IDocumentService documentService, ILogger<Docume
 	catch (Exception ex)
 	{
 	  logger.LogError(ex, "An unexpected error deleting document {DocId}", id);
-	  return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred", Detail = ex.Message });
+	  return StatusCode(StatusCodes.Status500InternalServerError,
+				new { Message = "An unexpected error occurred", Detail = ex.Message });
 	}
   }
 }

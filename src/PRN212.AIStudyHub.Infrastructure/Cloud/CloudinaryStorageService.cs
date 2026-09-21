@@ -19,7 +19,10 @@ public class CloudinaryStorageService : ICloudStorageService
 	_folder = config.Value.Folder;
   }
 
-  public async Task<CloudUploadResult> UploadRawFileAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default)
+  public async Task<CloudUploadResult> UploadRawFileAsync(
+		Stream fileStream,
+		string fileName,
+		CancellationToken cancellationToken = default)
   {
 	try
 	{

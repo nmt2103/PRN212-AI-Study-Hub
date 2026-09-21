@@ -13,7 +13,8 @@ namespace PRN212.AIStudyHub.Application.Services
   {
 	public async Task<SubjectDto> CreateSubjectAsync(CreateSubjectRequest request, CancellationToken cancellationToken = default)
 	{
-	  var isExist = await context.Subjects.AnyAsync(s => s.Name.ToLower() == request.Name.ToLower(), cancellationToken);
+	  var isExist = await context.Subjects
+				.AnyAsync(s => s.Name.ToLower() == request.Name.ToLower(), cancellationToken);
 
 	  if (isExist)
 	  {
@@ -35,7 +36,8 @@ namespace PRN212.AIStudyHub.Application.Services
 
 	public async Task<List<SubjectDto>> GetAllSubjectsAsync(CancellationToken cancellationToken = default)
 	{
-	  return await context.Subjects.AsNoTracking().OrderBy(s => s.Name).Select(s => new SubjectDto(s.Id, s.Name, s.Description, s.CreatedAt)).ToListAsync(cancellationToken);
+	  return await context.Subjects.AsNoTracking().OrderBy(s => s.Name)
+				.Select(s => new SubjectDto(s.Id, s.Name, s.Description, s.CreatedAt)).ToListAsync(cancellationToken);
 	}
   }
 }

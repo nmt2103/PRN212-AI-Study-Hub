@@ -21,7 +21,9 @@ namespace PRN212.AIStudyHub.WebAPI.Controllers
 	[HttpPost]
 	[ProducesResponseType(typeof(SubjectDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<IActionResult> CreateSubject([FromBody] CreateSubjectRequest request, CancellationToken cancellationToken)
+	public async Task<IActionResult> CreateSubject(
+		[FromBody] CreateSubjectRequest request,
+		CancellationToken cancellationToken)
 	{
 	  try
 	  {
@@ -35,7 +37,8 @@ namespace PRN212.AIStudyHub.WebAPI.Controllers
 	  catch (Exception ex)
 	  {
 		logger.LogError(ex, "An unexpected error while creating new subject: {SubjectName}", request.Name);
-		return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An unexpected error occurred", Detail = ex.Message });
+		return StatusCode(StatusCodes.Status500InternalServerError,
+				new { message = "An unexpected error occurred", Detail = ex.Message });
 	  }
 	}
   }
