@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PRN212.AIStudyHub.Application.DTOs.Common;
+using PRN212.AIStudyHub.Application.DTOs.Document;
 using PRN212.AIStudyHub.Application.DTOs.Subject;
+using PRN212.AIStudyHub.Application.Exceptions;
+using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Application.Interfaces.Security;
 
 namespace PRN212.AIStudyHub.WebAPI.Controllers;
 
 [Authorize]
 [Route("api/v1/subjects")]
-public class SubjectController(ISubjectService subjectService) : BaseApiController
+public class SubjectController(ISubjectService subjectService, IDocumentService documentService) : BaseApiController
 {
   /// <summary>
   /// Lấy toàn bộ danh mục môn học trong hệ thống
@@ -35,5 +38,46 @@ public class SubjectController(ISubjectService subjectService) : BaseApiControll
 	var result = await subjectService.CreateSubject(request, cancellationToken);
 	return StatusCode(StatusCodes.Status201Created,
 	  ApiResponse<SubjectDto>.SuccessResponse(result, "Subject created successfully."));
+  }
+
+  /// <summary>
+  /// Lấy danh sách tài liệu theo môn học có phân trang (chỉ gồm tài liệu cá nhân hoặc tài liệu công khai)
+  /// </summary>
+  [HttpGet("{subjectId:guid}/documents")]
+  [ProducesResponseType(typeof(ApiResponse<PagedResult<DocumentResponseDto>>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> GetDocumentsBySubject(
+	[FromRoute] Guid subjectId,
+	[FromQuery] int pageNumber = 1,
+	[FromQuery] int pageSize = 10,
+	CancellationToken cancellationToken = default)
+  {
+	if (subjectId == Guid.Empty)
+	{
+	  throw new BadRequestException("SubjectId must not be empty.");
+	}
+
+	if (pageNumber < 1)
+	{
+	  throw new BadRequestException("Page number must be greater than or equal to 1.");
+	}
+
+	if (pageSize < 1 || pageSize > 100)
+	{
+	  throw new BadRequestException("Page size must be between 1 and 100");
+	}
+
+	var result = await documentService.GetDocumentsBySubject(
+	  subjectId,
+	  CurrentUserId,
+	  pageNumber,
+	  pageSize,
+	  cancellationToken);
+
+	return Ok(ApiResponse<PagedResult<DocumentResponseDto>>.SuccessResponse(
+	  result,
+	  "Fetched documents by subject successfully."));
   }
 }

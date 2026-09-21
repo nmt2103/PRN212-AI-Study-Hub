@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PRN212.AIStudyHub.Application.DTOs.Common;
 using PRN212.AIStudyHub.Application.DTOs.Document;
 using PRN212.AIStudyHub.Application.Exceptions;
 using PRN212.AIStudyHub.Application.Interfaces;
@@ -194,5 +195,92 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 		docs.UploadedAt,
 		docs.IsPublic,
 		docs.SubjectId);
+  }
+
+  public async Task<DocumentResponseDto> UpdateDocumentSubject(
+	  Guid documentId,
+	  Guid currentUserId,
+	  bool isAdmin,
+	  UpdateDocumentSubjectRequest request,
+	  CancellationToken cancellationToken = default)
+  {
+	var document = await context.Documents
+		.FirstOrDefaultAsync(doc => doc.Id == documentId && !doc.IsDeleted, cancellationToken);
+
+	if (document is null)
+	{
+	  throw new NotFoundException($"Document with ID '{documentId}' was not found");
+	}
+
+	if (document.UserId != currentUserId && !isAdmin)
+	{
+	  throw new ForbiddenException("Only the owner can edit this document.");
+	}
+
+	var subjectExist = await context.Subjects
+		.AnyAsync(subject => subject.Id == request.SubjectId, cancellationToken);
+	if (!subjectExist)
+	{
+	  throw new NotFoundException($"Subject with ID '{request.SubjectId}' was not found.");
+	}
+
+	document.SubjectId = request.SubjectId;
+	await context.SaveChangesAsync(cancellationToken);
+
+	return new DocumentResponseDto(
+		document.Id,
+		document.Title,
+		document.FileName,
+		document.StoragePath,
+		document.CloudPublicId,
+		document.IsCloudStored,
+		document.FileSize,
+		document.FileExtension,
+		document.ContentType,
+		document.UploadedAt,
+		document.IsPublic,
+		document.SubjectId);
+  }
+
+  public async Task<PagedResult<DocumentResponseDto>> GetDocumentsBySubject(
+	  Guid subjectId,
+	  Guid currentUserId,
+	  int pageNumber,
+	  int pageSize,
+	  CancellationToken cancellationToken = default)
+  {
+	var isSubjectExist = await context.Subjects
+		.AnyAsync(subject => subject.Id == subjectId, cancellationToken);
+
+	if (!isSubjectExist)
+	{
+	  throw new NotFoundException($"Subject with ID '{subjectId}' was not found.");
+	}
+
+	var query = context.Documents.AsNoTracking()
+		.Where(doc => doc.SubjectId == subjectId && !doc.IsDeleted
+			&& (doc.UserId == currentUserId || doc.IsPublic));
+
+	int totalCount = await query.CountAsync(cancellationToken);
+
+	var items = await query.OrderByDescending(doc => doc.UploadedAt)
+		.Skip((pageNumber - 1) * pageSize)
+		.Take(pageSize)
+		.Select(doc => new DocumentResponseDto(
+			doc.Id,
+			doc.Title,
+			doc.FileName,
+			doc.StoragePath,
+			doc.CloudPublicId,
+			doc.IsCloudStored,
+			doc.FileSize,
+			doc.FileExtension,
+			doc.ContentType,
+			doc.UploadedAt,
+			doc.IsPublic,
+			doc.SubjectId))
+		.ToListAsync(cancellationToken);
+
+	return PagedResult<DocumentResponseDto>.Create(items, totalCount, pageNumber, pageSize);
   }
 }
