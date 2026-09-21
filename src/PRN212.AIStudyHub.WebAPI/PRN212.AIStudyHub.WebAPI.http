@@ -1,23 +1,112 @@
-@PRN212.AIStudyHub.WebAPI_HostAddress = http://localhost:5032
+@WebAPI_HostAddress = http://localhost:5032
+@authToken = eyJhbGciOi...
 
-### 1. Register New User
-POST {{WebAPI_HostAddress}}/api/v1//auth/register
+### =========================================================================
+### AUTH MODULE
+### =========================================================================
+
+### 1. Register New User (Step 1: Receive OTP)
+POST {{WebAPI_HostAddress}}/api/v1/auth/register
 Content-Type: application/json
 
 {
   "email": "student@aistudyhub.com",
-  "password": "123456",
-  "confirmPassword": "123456",
-  "firstName": "Student"
-  "lastName": "A"
+  "password": "Password123@",
+  "confirmPassword": "Password123@",
+  "firstName": "Văn A",
+  "lastName": "Nguyễn",
   "role": "Student"
 }
 
-### 2. Login User
+### 2. Verify OTP (Step 2: Create Account)
+POST {{WebAPI_HostAddress}}/api/v1/auth/verify-otp
+Content-Type: application/json
+
+{
+  "email": "student@aistudyhub.com",
+  "otp": "123456"
+}
+
+### 3. Login
+# @name login
 POST {{WebAPI_HostAddress}}/api/v1/auth/login
 Content-Type: application/json
 
 {
   "email": "student@aistudyhub.com",
-  "password": "123456"
+  "password": "Password123@"
 }
+
+### 4. Get Current User Profile
+GET {{WebAPI_HostAddress}}/api/v1/auth/me
+Authorization: Bearer {{authToken}}
+
+### 5. Forgot Password
+POST {{WebAPI_HostAddress}}/api/v1/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "student@aistudyhub.com"
+}
+
+### 6. Reset Password
+POST {{WebAPI_HostAddress}}/api/v1/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "student@aistudyhub.com",
+  "otp": "123456",
+  "newPassword": "NewPassword123@"
+}
+
+### 7. Logout (Blacklist Token)
+POST {{WebAPI_HostAddress}}/api/v1/auth/logout
+Authorization: Bearer {{authToken}}
+
+
+### =========================================================================
+### SUBJECTS MODULE
+### =========================================================================
+
+### 8. Get All Subjects
+GET {{WebAPI_HostAddress}}/api/v1/subjects
+Authorization: Bearer {{authToken}}
+
+### 9. Create New Subject
+POST {{WebAPI_HostAddress}}/api/v1/subjects
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "PRN212 - Basic Cross-Platform Application with .NET",
+  "description": "C# Programming, WPF, WebAPI, and Clean Architecture."
+}
+
+
+### =========================================================================
+### DOCUMENTS MODULE
+### =========================================================================
+
+### 10. Get My Documents
+GET {{WebAPI_HostAddress}}/api/v1/documents
+Authorization: Bearer {{authToken}}
+
+### 11. Get Document Details By ID
+@documentId = 01920000-0000-7000-8000-000000000000
+GET {{WebAPI_HostAddress}}/api/v1/documents/{{documentId}}
+Authorization: Bearer {{authToken}}
+
+### 12. Update Document Metadata
+PUT {{WebAPI_HostAddress}}/api/v1/documents/{{documentId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "PRN212 Slide Chapter 1 - Updated",
+  "subjectId": "01920000-0000-7000-8000-000000000000",
+  "isPublic": true
+}
+
+### 13. Soft Delete Document
+DELETE {{WebAPI_HostAddress}}/api/v1/documents/{{documentId}}
+Authorization: Bearer {{authToken}}

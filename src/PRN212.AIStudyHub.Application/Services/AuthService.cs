@@ -1,135 +1,140 @@
+using System.Security.Cryptography;
+using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using PRN212.AIStudyHub.Application.DTOs.Auth;
+using PRN212.AIStudyHub.Application.Exceptions;
 using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Application.Interfaces.Security;
-using PRN212.AIStudyHub.Domain.Entities;
-using System.Security.Cryptography;
 using PRN212.AIStudyHub.Application.Utils;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Google.Apis.Auth;
-using BCrypt.Net;
+using PRN212.AIStudyHub.Domain.Entities;
 
 namespace PRN212.AIStudyHub.Application.Services;
 
-public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, IMemoryCache cache, IEmailService emailService, IConfiguration config) : IAuthService
+public class AuthService(
+	IAppDbContext context,
+	IPasswordHasher passwordHasher,
+	IJwtTokenGenerator jwtTokenGenerator,
+	IMemoryCache cache,
+	IEmailService emailService,
+	IConfiguration config) : IAuthService
 {
-  public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+  public async Task<string> Register(
+		RegisterRequest request,
+		CancellationToken cancellationToken = default)
   {
-	// Validate the input parameters
-	if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+	if (string.IsNullOrWhiteSpace(request.Email)
+		|| string.IsNullOrWhiteSpace(request.Password)
+		|| string.IsNullOrWhiteSpace(request.ConfirmPassword)
+		|| string.IsNullOrWhiteSpace(request.FirstName)
+		|| string.IsNullOrWhiteSpace(request.LastName))
 	{
-	  throw new ArgumentException("Email and password are required");
+	  throw new BadRequestException("All fields are required.");
 	}
 
-	// Validate format email
 	if (!ValidationUtils.IsValidEmail(request.Email))
 	{
-	  throw new ArgumentException("Invalid email format");
+	  throw new BadRequestException("Invalid email format.");
 	}
 
-	// Query the user from the database based on the provided email
-	var user = await context.AppUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+	if (!ValidationUtils.IsValidName(request.FirstName))
+	{
+	  throw new BadRequestException("Invalid first name format.");
+	}
 
-	// Check if the user exists and if the provided password matches the stored password hash
+	if (!ValidationUtils.IsValidName(request.LastName))
+	{
+	  throw new BadRequestException("Invalid last name format.");
+	}
+
+	var existingEmail = await context.AppUsers
+		.AsNoTracking()
+		.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+
+	if (existingEmail is not null)
+	{
+	  throw new ConflictException("Email already exists.");
+	}
+
+	if (request.Password != request.ConfirmPassword)
+	{
+	  throw new BadRequestException("Passwords do not match.");
+	}
+
+	if (request.Password.Length < 6)
+	{
+	  throw new BadRequestException("Password must be at least 6 characters long.");
+	}
+
+	var otp = new Random().Next(100000, 999999).ToString();
+	var cacheKey = $"OTP_{request.Email}";
+	var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
+	cache.Set(cacheKey, new OtpCacheEntry(request, otp), cacheEntryOptions);
+
+	var subject = "Xác nhận đăng ký tài khoản AI Study Hub";
+	var body = $"<h3>Chào {request.FirstName},</h3><p>Mã OTP xác nhận đăng ký tài khoản của bạn là: <strong>{otp}</strong></p><p>Mã này sẽ hết hạn sau 5 phút.</p>";
+	await emailService.SendEmailAsync(request.Email, subject, body, cancellationToken);
+
+	return "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư rác).";
+  }
+
+  public async Task<AuthResponse> Login(
+		LoginRequest request,
+		CancellationToken cancellationToken = default)
+  {
+	if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+	{
+	  throw new BadRequestException("Email and password are required.");
+	}
+
+	if (!ValidationUtils.IsValidEmail(request.Email))
+	{
+	  throw new BadRequestException("Invalid email format.");
+	}
+
+	var user = await context.AppUsers
+		.AsNoTracking()
+		.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+
 	if (user is null || !passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
 	{
-	  throw new InvalidOperationException("Invalid credentials");
+	  throw new UnauthorizedException("Invalid credentials.");
 	}
 
-	// Check if the user account is active
 	if (!user.IsActive)
 	{
-	  throw new InvalidOperationException("User account is inactive");
+	  throw new UnauthorizedException("User account is inactive.");
 	}
 
 	return await GenerateAuthResponseAsync(user, cancellationToken);
   }
 
-  public async Task<string> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
-  {
-	// Validate the input parameters
-	if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.ConfirmPassword) || string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-	{
-	  throw new ArgumentException("All fields are required");
-	}
-
-	// Validate format for email
-	if (!ValidationUtils.IsValidEmail(request.Email))
-	{
-	  throw new ArgumentException("Invalid email format");
-	}
-
-	// Validate format for first name (allow Vietnamese)
-	if (!ValidationUtils.IsValidName(request.FirstName))
-	{
-	  throw new ArgumentException("Invalid first name format");
-	}
-
-	// Validate format for last name (allow Vietnamese)
-	if (!ValidationUtils.IsValidName(request.LastName))
-	{
-	  throw new ArgumentException("Invalid last name format");
-	}
-
-	// Check if the email already exists in the database
-	var existingEmail = await context.AppUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
-
-	if (existingEmail is not null)
-	{
-	  throw new InvalidOperationException("Email already exists");
-	}
-
-	// Validate password and confirm password
-	if (request.Password != request.ConfirmPassword)
-	{
-	  throw new ArgumentException("Passwords do not match");
-	}
-
-	// Validate password length
-	if (request.Password.Length < 6)
-	{
-	  throw new ArgumentException("Password must be at least 6 characters long");
-	}
-
-	// Random OTP with 6 index
-	var otp = new Random().Next(100000, 999999).ToString();
-
-	// Save to cache memmory (expired in 5 minutes)
-	var cacheKey = $"OTP_{request.Email}";
-	var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-	cache.Set(cacheKey, new OtpCacheEntry(request, otp), cacheEntryOptions);
-
-	// Send mail to user
-	var subject = "Xác nhận đăng ký tài khoản AI Study Hub";
-	var body = $"<h3>Chào {request.FirstName},</h3><p>Mã OTP xác nhận đăng ký tài khoản của bạn là: <strong>{otp}</strong></p><p>Mã này sẽ hết hạn sau 5 phút.</p>";
-	await emailService.SendEmailAsync(request.Email, subject, body);
-
-	return "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư rác).";
-  }
-
-  public async Task<string> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken cancellationToken = default)
+  public async Task<string> VerifyOtp(
+		VerifyOtpRequest request,
+		CancellationToken cancellationToken = default)
   {
 	var cacheKey = $"OTP_{request.Email}";
 
 	if (!cache.TryGetValue(cacheKey, out OtpCacheEntry? cachedEntry) || cachedEntry is null)
 	{
-	  throw new InvalidOperationException("OTP code has expired");
+	  throw new BadRequestException("OTP code has expired or was not requested.");
 	}
 
 	if (cachedEntry.Otp != request.Otp)
 	{
-	  throw new ArgumentException("OTP code incorrect");
+	  throw new BadRequestException("OTP code is incorrect.");
 	}
 
 	var registerRequest = cachedEntry.Request;
 
-	// Check database again to ensure thread-safety / state consistency
-	var existingEmail = await context.AppUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Email == registerRequest.Email, cancellationToken);
+	var existingEmail = await context.AppUsers
+		.AsNoTracking()
+		.FirstOrDefaultAsync(u => u.Email == registerRequest.Email, cancellationToken);
+
 	if (existingEmail is not null)
 	{
-	  throw new InvalidOperationException("Email already exists");
+	  throw new ConflictException("Email already exists.");
 	}
 
 	var newUser = new AppUser
@@ -145,32 +150,38 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 	context.AppUsers.Add(newUser);
 	await context.SaveChangesAsync(cancellationToken);
 
-	// Clear cache
 	cache.Remove(cacheKey);
 
 	return "Xác nhận OTP thành công! Tài khoản của bạn đã được tạo, vui lòng đăng nhập.";
   }
 
-  public async Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
+  public async Task<UserDto> GetCurrentUser(Guid userId, CancellationToken cancellationToken = default)
   {
-	// Query the user from the database based on the provided Id
-	var user = await context.AppUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+	var user = await context.AppUsers
+		.AsNoTracking()
+		.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
-	// Check if user found
 	if (user is null)
-	  throw new KeyNotFoundException("User not found");
+	  throw new NotFoundException($"User with ID '{userId}' was not found.");
 
-	// Return the user profile info
-	return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
+	return new UserDto(
+		user.Id,
+		user.Email,
+		user.FirstName,
+		user.LastName,
+		user.Role,
+		user.IsActive,
+		user.CreatedAt,
+		user.UpdatedAt);
   }
 
-  private async Task<AuthResponse> GenerateAuthResponseAsync(AppUser user, CancellationToken cancellationToken)
+  private async Task<AuthResponse> GenerateAuthResponseAsync(
+		AppUser user,
+		CancellationToken cancellationToken)
   {
-	// Generate access token and refresh token
 	string accessToken = jwtTokenGenerator.GenerateToken(user);
 	string refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
-	// Create a new RefreshToken entity and set its properties
 	var refreshTokenEntity = new RefreshToken
 	{
 	  UserId = user.Id,
@@ -179,24 +190,31 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 	  IsRevoked = false
 	};
 
-	// Add the refresh token entity to the database context and save changes
 	context.RefreshTokens.Add(refreshTokenEntity);
 	await context.SaveChangesAsync(cancellationToken);
 
-	// Create a UserDto object to include user information in the response
-	var userDto = new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
+	var userDto = new UserDto(
+		user.Id,
+		user.Email,
+		user.FirstName,
+		user.LastName,
+		user.Role,
+		user.IsActive,
+		user.CreatedAt,
+		user.UpdatedAt);
 
-	// Return the authentication response with the generated tokens and user information
 	return new AuthResponse(accessToken, refreshToken, "Bearer", 3600, userDto);
   }
 
-  public async Task<GoogleLoginResult> GoogleLoginAsync(GoogleLoginRequest req)
+  public async Task<GoogleLoginResult> GoogleLogin(
+		GoogleLoginRequest req,
+		CancellationToken cancellationToken = default)
   {
 	var accessToken = req.GetTokenChecked();
 
 	if (string.IsNullOrEmpty(accessToken))
 	{
-	  throw new InvalidOperationException("Backend can't find the token");
+	  throw new BadRequestException("Google token is required.");
 	}
 
 	string userEmail = "";
@@ -206,14 +224,14 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 
 	if (accessToken.StartsWith("ya29"))
 	{
-	  var httpClient = new HttpClient();
-	  var response = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/userinfo?access_token={accessToken}");
+	  using var httpClient = new HttpClient();
+	  var response = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/userinfo?access_token={accessToken}", cancellationToken);
 	  if (!response.IsSuccessStatusCode)
 	  {
-		throw new UnauthorizedAccessException("Invalid Google Access Token");
+		throw new UnauthorizedException("Invalid Google Access Token.");
 	  }
-	  var jsonResponse = await response.Content.ReadAsStringAsync();
-	  var docs = System.Text.Json.JsonDocument.Parse(jsonResponse);
+	  var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
+	  using var docs = System.Text.Json.JsonDocument.Parse(jsonResponse);
 	  var root = docs.RootElement;
 
 	  userEmail = root.TryGetProperty("email", out var emailEl) ? emailEl.GetString() ?? "" : "";
@@ -224,49 +242,54 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 	else
 	{
 	  var clientId = config["Google:ClientId"];
-	  var settings = new GoogleJsonWebSignature.ValidationSettings()
+	  var settings = new GoogleJsonWebSignature.ValidationSettings
 	  {
-		Audience = new List<string>() { clientId ?? string.Empty }
+		Audience = new List<string> { clientId ?? string.Empty }
 	  };
 
-	  var payload = await GoogleJsonWebSignature.ValidateAsync(accessToken, settings);
-	  userEmail = payload.Email;
-	  userName = payload.Name;
-	  firstName = payload.GivenName ?? userName;
-	  lastName = payload.FamilyName ?? "";
+	  try
+	  {
+		var payload = await GoogleJsonWebSignature.ValidateAsync(accessToken, settings);
+		userEmail = payload.Email;
+		userName = payload.Name;
+		firstName = payload.GivenName ?? userName;
+		lastName = payload.FamilyName ?? "";
+	  }
+	  catch (Exception ex)
+	  {
+		throw new UnauthorizedException($"Invalid Google ID Token: {ex.Message}");
+	  }
 	}
 
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == userEmail);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == userEmail, cancellationToken);
 
 	if (userInDb != null)
 	{
-	  // User exists, return standard auth response
 	  return new GoogleLoginResult
 	  {
 		IsNewUser = false,
-		AuthResponse = await GenerateAuthResponseAsync(userInDb, default)
+		AuthResponse = await GenerateAuthResponseAsync(userInDb, cancellationToken)
 	  };
 	}
-	else
+
+	var tempToken = jwtTokenGenerator.GenerateTemporaryToken(userEmail, firstName, lastName);
+	return new GoogleLoginResult
 	{
-	  // New user, generate temporary token
-	  var tempToken = jwtTokenGenerator.GenerateTemporaryToken(userEmail, firstName, lastName);
-	  return new GoogleLoginResult
-	  {
-		IsNewUser = true,
-		TemporaryToken = tempToken,
-		Message = "Please choose your role to complete registation."
-	  };
-	}
+	  IsNewUser = true,
+	  TemporaryToken = tempToken,
+	  Message = "Please choose your role to complete registration."
+	};
   }
 
-  // Khi đăng nhập bằng google sẽ cho chọn role nữa sau đó mới lưu vào database thông tin từ google (gồm email, tên, role)
-  public async Task<AuthResponse> CompleteGoogleRegistrationAsync(CompleteGoogleRegistrationRequest request, string tempToken)
+  public async Task<AuthResponse> CompleteGoogleRegistration(
+		CompleteGoogleRegistrationRequest request,
+		string tempToken,
+		CancellationToken cancellationToken = default)
   {
 	var principal = jwtTokenGenerator.ValidateTemporaryToken(tempToken);
 	if (principal == null)
 	{
-	  throw new UnauthorizedAccessException("Temporary token is invalid or expired.");
+	  throw new UnauthorizedException("Temporary token is invalid or expired.");
 	}
 
 	var email = principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -275,23 +298,21 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 
 	if (string.IsNullOrEmpty(email))
 	{
-	  throw new InvalidOperationException("Invalid token payload.");
+	  throw new BadRequestException("Invalid token payload: Email claim is missing.");
 	}
 
 	if (request.Role != "Student" && request.Role != "Lecturer")
 	{
-	  throw new ArgumentException("Invalid role.");
+	  throw new BadRequestException("Invalid role. Role must be 'Student' or 'Lecturer'.");
 	}
 
-	// Double check DB
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == email);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 	if (userInDb != null)
 	{
-	  return await GenerateAuthResponseAsync(userInDb, default);
+	  return await GenerateAuthResponseAsync(userInDb, cancellationToken);
 	}
 
-	string randomDummyPassword = Guid.NewGuid().ToString();
-	string hashedDummyPassword = BCrypt.Net.BCrypt.HashPassword(randomDummyPassword);
+	string hashedDummyPassword = passwordHasher.HashPassword(Guid.NewGuid().ToString());
 
 	var newUser = new AppUser
 	{
@@ -304,21 +325,22 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 	};
 
 	context.AppUsers.Add(newUser);
-	await context.SaveChangesAsync(default);
+	await context.SaveChangesAsync(cancellationToken);
 
-	return await GenerateAuthResponseAsync(newUser, default);
+	return await GenerateAuthResponseAsync(newUser, cancellationToken);
   }
 
-  public async Task<string> ForgotPassword(ForgotPasswordRequestDto request)
+  public async Task<string> ForgotPassword(
+		ForgotPasswordRequestDto request,
+		CancellationToken cancellationToken = default)
   {
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email, cancellationToken);
 	if (userInDb == null)
 	{
-	  throw new KeyNotFoundException("Account does not exist");
+	  throw new NotFoundException("Account with this email does not exist.");
 	}
 
 	string otp = new Random().Next(100000, 999999).ToString();
-
 	var cacheOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
 	cache.Set($"OTP_{request.email}", otp, cacheOptions);
 
@@ -326,10 +348,10 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 	{
 	  try
 	  {
-		string subject = "eParking - Reset Password OTP Verification";
+		string subject = "AI Study Hub - Reset Password OTP Verification";
 		string body = $@"
                         <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px;'>
-                            <h2 style='color: #2563eb; text-align: center;'>eParking Verification Code</h2>
+                            <h2 style='color: #2563eb; text-align: center;'>AI Study Hub Verification Code</h2>
                             <p>Hello,</p>
                             <p>We received a request to reset your password. Please use the verification code below to proceed:</p>
                             <div style='text-align: center; margin: 30px 0;'>
@@ -339,7 +361,7 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
                             <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;' />
                             <p style='font-size: 12px; color: #666; text-align: center;'>This is an automated message, please do not reply directly to this email.</p>
                         </div>";
-		await emailService.SendEmailAsync(userInDb.Email, subject, body);
+		await emailService.SendEmailAsync(userInDb.Email, subject, body, cancellationToken);
 	  }
 	  catch (Exception ex)
 	  {
@@ -349,26 +371,28 @@ public class AuthService(IAppDbContext context, IPasswordHasher passwordHasher, 
 	return "Vui lòng nhập mã OTP (đã gửi qua mail) để thay đổi mật khẩu";
   }
 
-  public async Task<string> ResetPassword(ResetPasswordDto request)
+  public async Task<string> ResetPassword(
+		ResetPasswordDto request,
+		CancellationToken cancellationToken = default)
   {
 	if (!cache.TryGetValue($"OTP_{request.email}", out string? savedOtp))
 	{
-	  throw new KeyNotFoundException("OTP has expired (over 5 minutes) or has not been requested");
+	  throw new BadRequestException("OTP has expired (over 5 minutes) or has not been requested.");
 	}
 
 	if (savedOtp != request.otp)
 	{
-	  throw new KeyNotFoundException("Invalid OTP");
+	  throw new BadRequestException("Invalid OTP code.");
 	}
 
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email, cancellationToken);
 	if (userInDb == null)
 	{
-	  throw new KeyNotFoundException("Account does not exist");
+	  throw new NotFoundException("Account does not exist.");
 	}
 
-	userInDb.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.newPassword);
-	await context.SaveChangesAsync();
+	userInDb.PasswordHash = passwordHasher.HashPassword(request.newPassword);
+	await context.SaveChangesAsync(cancellationToken);
 	cache.Remove($"OTP_{request.email}");
 	return "Mật khẩu đã được cập nhật thành công";
   }

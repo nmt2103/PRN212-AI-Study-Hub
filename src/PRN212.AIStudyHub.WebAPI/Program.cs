@@ -1,15 +1,17 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Application.Interfaces.Security;
 using PRN212.AIStudyHub.Application.Services;
+using PRN212.AIStudyHub.Application.Services.Cloud;
+using PRN212.AIStudyHub.Infrastructure.Cloud;
 using PRN212.AIStudyHub.Infrastructure.Data;
 using PRN212.AIStudyHub.Infrastructure.Security;
-using PRN212.AIStudyHub.Infrastructure.Cloud;
-using PRN212.AIStudyHub.Application.Services.Cloud;
+using PRN212.AIStudyHub.WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +64,24 @@ builder.Services.AddAuthentication(options =>
 	IssuerSigningKey = new SymmetricSecurityKey(secretKey),
 	ClockSkew = TimeSpan.Zero
   };
+
+  options.Events = new JwtBearerEvents
+  {
+	OnTokenValidated = context =>
+	{
+	  var memoryCache = context.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+	  var authHeader = context.Request.Headers.Authorization.ToString();
+	  if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+	  {
+		var token = authHeader["Bearer ".Length..].Trim();
+		if (memoryCache.TryGetValue($"Blacklist_{token}", out _))
+		{
+		  context.Fail("Token has been revoked/logged out.");
+		}
+	  }
+	  return Task.CompletedTask;
+	}
+  };
 });
 
 builder.Services.AddAuthorization();
@@ -105,6 +125,8 @@ builder.Services.AddSwaggerGen(options =>
 // =========================================================================
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
