@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using PRN212.AIStudyHub.Application.DTOs.Common;
 using PRN212.AIStudyHub.Application.Exceptions;
@@ -39,15 +40,20 @@ public class GlobalExceptionMiddleware(
 	  _ => (HttpStatusCode.InternalServerError, "An unexpected internal server error occurred.")
 	};
 
+	var safeMethod = SanitizeForLog(context.Request.Method);
+	var safePath = SanitizeForLog(context.Request.Path.ToString());
+	var safeExceptionMessage = SanitizeForLog(exception.Message);
+	var safeMessage = SanitizeForLog(message);
+
 	if (statusCode == HttpStatusCode.InternalServerError)
 	{
 	  logger.LogError(exception, "Unhandled server error processing {Method} {Path}: {Message}",
-		  context.Request.Method, context.Request.Path, exception.Message);
+		  safeMethod, safePath, safeExceptionMessage);
 	}
 	else
 	{
 	  logger.LogWarning("Handled business exception on {Method} {Path} -> {StatusCode}: {Message}",
-		  context.Request.Method, context.Request.Path, (int)statusCode, message);
+		  safeMethod, safePath, (int)statusCode, safeMessage);
 	}
 
 	context.Response.ContentType = "application/json";
@@ -70,5 +76,29 @@ public class GlobalExceptionMiddleware(
 	};
 
 	await context.Response.WriteAsync(JsonSerializer.Serialize(response, jsonOptions));
+  }
+
+  private static string SanitizeForLog(string? input)
+  {
+	if (string.IsNullOrEmpty(input))
+	{
+	  return string.Empty;
+	}
+
+	var sb = new StringBuilder(input.Length);
+	foreach (var ch in input)
+	{
+	  if (ch == '\r' || ch == '\n')
+	  {
+		continue;
+	  }
+
+	  if (!char.IsControl(ch))
+	  {
+		sb.Append(ch);
+	  }
+	}
+
+	return sb.ToString();
   }
 }
