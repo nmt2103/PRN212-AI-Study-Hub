@@ -17,8 +17,8 @@ public class SubjectController(ISubjectService subjectService) : BaseApiControll
   [ProducesResponseType(typeof(ApiResponse<List<SubjectDto>>), StatusCodes.Status200OK)]
   public async Task<IActionResult> GetAllSubjects(CancellationToken cancellationToken)
   {
-    var result = await subjectService.GetAllSubjects(cancellationToken);
-    return Ok(ApiResponse<List<SubjectDto>>.SuccessResponse(result, "Fetched all subjects successfully."));
+	var result = await subjectService.GetAllSubjects(cancellationToken);
+	return Ok(ApiResponse<List<SubjectDto>>.SuccessResponse(result, "Fetched all subjects successfully."));
   }
 
   /// <summary>
@@ -29,11 +29,11 @@ public class SubjectController(ISubjectService subjectService) : BaseApiControll
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
   public async Task<IActionResult> CreateSubject(
-    [FromBody] CreateSubjectRequest request,
-    CancellationToken cancellationToken)
+	[FromBody] CreateSubjectRequest request,
+	CancellationToken cancellationToken)
   {
-    var result = await subjectService.CreateSubject(request, cancellationToken);
-    return StatusCode(StatusCodes.Status201Created,
-      ApiResponse<SubjectDto>.SuccessResponse(result, "Subject created successfully."));
+	var result = await subjectService.CreateSubject(request, cancellationToken);
+	return StatusCode(StatusCodes.Status201Created,
+	  ApiResponse<SubjectDto>.SuccessResponse(result, "Subject created successfully."));
   }
 }
