@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PRN212.AIStudyHub.Application.DTOs.Common;
 using PRN212.AIStudyHub.Application.DTOs.Document;
 using PRN212.AIStudyHub.Application.Exceptions;
 using PRN212.AIStudyHub.Application.Interfaces;
@@ -9,214 +9,115 @@ using PRN212.AIStudyHub.WebAPI.Models;
 namespace PRN212.AIStudyHub.WebAPI.Controllers;
 
 [Authorize]
-[ApiController]
-[Route("/api/v1/documents")]
-public class DocumentController(IDocumentService documentService, ILogger<DocumentController> logger) : ControllerBase
+[Route("api/v1/documents")]
+public class DocumentController(IDocumentService documentService) : BaseApiController
 {
-  private readonly string[] _allowExtensions = { ".pdf", ".docx", ".doc", ".pptx", ".txt", ".md" };
-  private const long MaxFileSize = 25 * 1024 * 1024;
+  private static readonly string[] AllowedExtensions = [".pdf", ".docx", ".doc", ".pptx", ".txt", ".md"];
+  private const long MaxFileSize = 25 * 1024 * 1024; // 25MB
 
   /// <summary>
-  /// Tải lên tài liệu học tập và lưu trữ trực tiếp lên Cloudinary
+  /// Tải lên tài liệu học tập và lưu trữ lên Cloudinary
   /// </summary>
-  /// <param name="request">Dữ liệu tài liệu và tệp đính kèm (multipart/form-data)</param>
-  /// <param name="cancellationToken"></param>
-  /// <returns>Thông tin tài liệu đã lưu thành công</returns>
   [HttpPost("upload")]
   [Consumes("multipart/form-data")]
-  [ProducesResponseType(typeof(DocumentResponseDto), StatusCodes.Status201Created)]
-  [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  [ProducesResponseType(StatusCodes.Status404NotFound)]
-  [ProducesResponseType(StatusCodes.Status502BadGateway)]
-  [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+  [ProducesResponseType(typeof(ApiResponse<DocumentResponseDto>), StatusCodes.Status201Created)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status502BadGateway)]
   public async Task<IActionResult> UploadAsync(
 		[FromForm] UploadDocumentRequest request,
 		CancellationToken cancellationToken)
   {
-	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-	  return Unauthorized(new { Message = "Unauthorized" });
-
 	if (request.File == null || request.File.Length == 0)
-	  return BadRequest(new { Message = "Empty file" });
+	  throw new BadRequestException("Uploaded file cannot be empty.");
 
 	if (request.File.Length > MaxFileSize)
-	  return BadRequest(new { Message = "File size cannot be over 25MB" });
+	  throw new BadRequestException("File size cannot exceed 25MB.");
 
 	var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
-	if (string.IsNullOrEmpty(fileExtension) || !_allowExtensions.Contains(fileExtension))
-	  return BadRequest(new { Message = "Invalid file extension" });
+	if (string.IsNullOrEmpty(fileExtension) || !AllowedExtensions.Contains(fileExtension))
+	  throw new BadRequestException($"File extension '{fileExtension}' is not supported. Allowed extensions: {string.Join(", ", AllowedExtensions)}");
 
-	try
-	{
-	  using var fileStream = request.File.OpenReadStream();
+	using var fileStream = request.File.OpenReadStream();
 
-	  var command = new UploadDocumentCommand(
-	  FileStream: fileStream,
-	  FileName: request.File.FileName,
-	  ContentType: request.File.ContentType,
-	  FileSize: request.File.Length,
-	  Title: request.Title,
-	  SubjectId: request.SubjectId,
-	  IsPublic: request.IsPublic
-	  );
+	var command = new UploadDocumentCommand(
+		FileStream: fileStream,
+		FileName: request.File.FileName,
+		ContentType: request.File.ContentType,
+		FileSize: request.File.Length,
+		Title: request.Title,
+		SubjectId: request.SubjectId,
+		IsPublic: request.IsPublic);
 
-	  var result = await documentService.UploadDocumentAsync(command, userId, cancellationToken);
+	var result = await documentService.UploadDocumentAsync(command, CurrentUserId, cancellationToken);
 
-	  return StatusCode(StatusCodes.Status201Created, result);
-	}
-	catch (InvalidOperationException ex)
-	{
-	  logger.LogWarning(ex, "Subject not found: {SubjectId}", request.SubjectId);
-	  return NotFound(new { ex.Message });
-	}
-	catch (CloudStorageException ex)
-	{
-	  logger.LogError(ex, "Cloudinary upload failed for file: {FileName}", request.File.FileName);
-	  return StatusCode(StatusCodes.Status502BadGateway,
-				new { Message = "Cloud storage service error", Detail = ex.Message });
-	}
-	catch (Exception ex)
-	{
-	  logger.LogError(ex, "Unexpected error uploading file: {FileName}", request.File.FileName);
-	  return StatusCode(StatusCodes.Status500InternalServerError,
-				new { Message = "An unexpected error occurred", Detail = ex.Message });
-	}
+	return StatusCode(StatusCodes.Status201Created,
+		ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Document uploaded successfully."));
   }
 
-  [HttpGet("get")]
-  [ProducesResponseType(typeof(List<DocumentItemDto>), StatusCodes.Status200OK)]
-  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  public async Task<IActionResult> GetMyDocument(
+  /// <summary>
+  /// Lấy danh sách tài liệu cá nhân (hỗ trợ lọc theo môn học)
+  /// </summary>
+  [HttpGet]
+  [HttpGet("get")] // Hỗ trợ tương thích ngược
+  [ProducesResponseType(typeof(ApiResponse<List<DocumentItemDto>>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  public async Task<IActionResult> GetMyDocuments(
 		[FromQuery] Guid? subjectId,
 		CancellationToken cancellationToken)
   {
-	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-	{
-	  return Unauthorized(new { message = "Unauthorized" });
-	}
-	try
-	{
-	  var result = await documentService.GetDocumentAsync(userId, subjectId, cancellationToken);
-	  return Ok(result);
-	}
-	catch (Exception ex)
-	{
-	  logger.LogError(ex, "Failed to get list of document from user {userId}", userId);
-	  return StatusCode(StatusCodes.Status500InternalServerError,
-				new { Message = "An unexpected error occurred", Detail = ex.Message });
-	}
+	var result = await documentService.GetDocumentAsync(CurrentUserId, subjectId, cancellationToken);
+	return Ok(ApiResponse<List<DocumentItemDto>>.SuccessResponse(result, "Fetched documents successfully."));
   }
 
-  [HttpGet("{id}")]
-  [ProducesResponseType(typeof(DocumentResponseDto), StatusCodes.Status200OK)]
-  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  [ProducesResponseType(StatusCodes.Status404NotFound)]
-  [ProducesResponseType(StatusCodes.Status403Forbidden)]
-  public async Task<IActionResult> GetDocumentById([FromRoute] Guid id, CancellationToken cancellationToken)
+  /// <summary>
+  /// Xem chi tiết thông tin tài liệu
+  /// </summary>
+  [HttpGet("{id:guid}")]
+  [ProducesResponseType(typeof(ApiResponse<DocumentResponseDto>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> GetDocumentById(
+		[FromRoute] Guid id,
+		CancellationToken cancellationToken)
   {
-	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-	{
-	  return Unauthorized(new { message = "Unauthorized" });
-	}
-
-	try
-	{
-	  var result = await documentService.GetDocumentDetailsAsync(id, userId, cancellationToken);
-	  return Ok(result);
-	}
-	catch (KeyNotFoundException ex)
-	{
-	  return NotFound(new { message = ex.Message });
-	}
-	catch (UnauthorizedAccessException ex)
-	{
-	  return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
-	}
-	catch (Exception ex)
-	{
-	  logger.LogError(ex, "An unexpected error getting document {DocId}", id);
-	  return StatusCode(StatusCodes.Status500InternalServerError,
-				new { message = "An unexpected error occurred", Detail = ex.Message });
-	}
+	var result = await documentService.GetDocumentDetailsAsync(id, CurrentUserId, cancellationToken);
+	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Fetched document details successfully."));
   }
 
-  [HttpPut("{id}")]
-  [ProducesResponseType(typeof(DocumentResponseDto), StatusCodes.Status200OK)]
-  [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  [ProducesResponseType(StatusCodes.Status403Forbidden)]
-  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  /// <summary>
+  /// Cập nhật thông tin tài liệu (chỉ áp dụng cho chủ sở hữu)
+  /// </summary>
+  [HttpPut("{id:guid}")]
+  [ProducesResponseType(typeof(ApiResponse<DocumentResponseDto>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
   public async Task<IActionResult> UpdateDocument(
 		[FromRoute] Guid id,
 		[FromBody] UpdateDocumentRequest request,
 		CancellationToken cancellationToken)
   {
-	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-	{
-	  return Unauthorized(new { Message = "Unauthorized" });
-	}
-
-	try
-	{
-	  var result = await documentService.UpdateDocumentAsync(id, userId, request, cancellationToken);
-	  return Ok(result);
-	}
-	catch (KeyNotFoundException ex)
-	{
-	  return NotFound(new { Message = ex.Message });
-	}
-	catch (UnauthorizedAccessException ex)
-	{
-	  return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
-	}
-	catch (InvalidOperationException ex)
-	{
-	  return BadRequest(new { Message = ex.Message });
-	}
-	catch (Exception ex)
-	{
-	  logger.LogError(ex, "An unexpected error updating document {DocId}", id);
-	  return StatusCode(StatusCodes.Status500InternalServerError,
-				new { Message = "An unexpected error occurred", Detail = ex.Message });
-	}
+	var result = await documentService.UpdateDocumentAsync(id, CurrentUserId, request, cancellationToken);
+	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Document updated successfully."));
   }
 
-  [HttpDelete("{id}")]
-  [ProducesResponseType(StatusCodes.Status204NoContent)]
-  [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-  [ProducesResponseType(StatusCodes.Status403Forbidden)]
-  [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> DeleteDocument([FromRoute] Guid id, CancellationToken cancellationToken)
+  /// <summary>
+  /// Xóa mềm tài liệu
+  /// </summary>
+  [HttpDelete("{id:guid}")]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> DeleteDocument(
+		[FromRoute] Guid id,
+		CancellationToken cancellationToken)
   {
-	var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-	if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-	{
-	  return Unauthorized(new { Message = "Unauthorized" });
-	}
-
-	try
-	{
-	  await documentService.DeleteDocumentAsync(id, userId, cancellationToken);
-	  return NoContent();
-	}
-	catch (KeyNotFoundException ex)
-	{
-	  return NotFound(new { Message = ex.Message });
-	}
-	catch (UnauthorizedAccessException ex)
-	{
-	  return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
-	}
-	catch (Exception ex)
-	{
-	  logger.LogError(ex, "An unexpected error deleting document {DocId}", id);
-	  return StatusCode(StatusCodes.Status500InternalServerError,
-				new { Message = "An unexpected error occurred", Detail = ex.Message });
-	}
+	await documentService.DeleteDocumentAsync(id, CurrentUserId, cancellationToken);
+	return Ok(ApiResponse.SuccessResponse("Document deleted successfully."));
   }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PRN212.AIStudyHub.Application.DTOs.Document;
+using PRN212.AIStudyHub.Application.Exceptions;
 using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Application.Services.Cloud;
 using PRN212.AIStudyHub.Domain.Entities;
@@ -17,7 +18,7 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 			.AnyAsync(subject => subject.Id == request.SubjectId, cancellationToken);
 
 	if (!isSubjectExist)
-	  throw new InvalidOperationException("Invalid subject");
+	  throw new NotFoundException($"Subject with ID '{request.SubjectId}' was not found.");
 
 	var cloudUploadResult = await cloudStorageService.UploadRawFileAsync(
 			request.FileStream,
@@ -66,25 +67,28 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 		Guid? subjectId = null,
 		CancellationToken cancellationToken = default)
   {
-	// Find user's file. Which hasn't deleted yet.
 	var query = context.Documents.AsNoTracking()
-			.Include(d => d.Subject).Where(d => d.UserId == userId && d.IsDeleted == false);
+			.Include(d => d.Subject)
+			.Where(d => d.UserId == userId && d.IsDeleted == false);
 
 	if (subjectId.HasValue)
 	{
 	  query = query.Where(d => d.SubjectId == subjectId.Value);
 	}
 
-	var result = await query.OrderByDescending(d => d.UploadedAt).Select(d => new DocumentItemDto(
-		d.Id,
-		d.Title,
-		d.FileName,
-		d.SubjectId,
-		d.Subject.Name,
-		d.UploadedAt,
-		d.ProcessingStatus,
-		d.IsPublic
-		)).ToListAsync(cancellationToken);
+	var result = await query
+		.OrderByDescending(d => d.UploadedAt)
+		.Select(d => new DocumentItemDto(
+			d.Id,
+			d.Title,
+			d.FileName,
+			d.SubjectId,
+			d.Subject.Name,
+			d.UploadedAt,
+			d.ProcessingStatus,
+			d.IsPublic))
+		.ToListAsync(cancellationToken);
+
 	return result;
   }
 
@@ -98,12 +102,12 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 
 	if (docs == null)
 	{
-	  throw new KeyNotFoundException("Document not found");
+	  throw new NotFoundException($"Document with ID '{id}' was not found.");
 	}
 
 	if (docs.UserId != userId && docs.IsPublic == false)
 	{
-	  throw new UnauthorizedAccessException("You don't have permission to view this document");
+	  throw new ForbiddenException("You do not have permission to view this private document.");
 	}
 
 	return new DocumentResponseDto(
@@ -131,11 +135,12 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 
 	if (doc == null)
 	{
-	  throw new KeyNotFoundException("Document not found");
+	  throw new NotFoundException($"Document with ID '{id}' was not found.");
 	}
+
 	if (doc.UserId != userId)
 	{
-	  throw new UnauthorizedAccessException("Only the owner can delete this document");
+	  throw new ForbiddenException("Only the owner can delete this document.");
 	}
 
 	doc.IsDeleted = true;
@@ -151,25 +156,26 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 		UpdateDocumentRequest request,
 		CancellationToken cancellationToken = default)
   {
-	var docs = await context.Documents.
-			FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+	var docs = await context.Documents
+			.FirstOrDefaultAsync(d => d.Id == id && d.IsDeleted == false, cancellationToken);
+
 	if (docs == null)
 	{
-	  throw new KeyNotFoundException("Document not found");
+	  throw new NotFoundException($"Document with ID '{id}' was not found.");
 	}
 
 	if (docs.UserId != userId)
 	{
-	  throw new UnauthorizedAccessException("Only the owner can edit this document");
+	  throw new ForbiddenException("Only the owner can edit this document.");
 	}
 
 	var subjectExist = await context.Subjects.AnyAsync(s => s.Id == request.SubjectId, cancellationToken);
 	if (!subjectExist)
 	{
-	  throw new InvalidOperationException("Invalid subject");
+	  throw new NotFoundException($"Subject with ID '{request.SubjectId}' was not found.");
 	}
 
-	docs.Title = request.Title;
+	docs.Title = request.Title.Trim();
 	docs.SubjectId = request.SubjectId;
 	docs.IsPublic = request.IsPublic;
 
@@ -187,7 +193,6 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 		docs.ContentType,
 		docs.UploadedAt,
 		docs.IsPublic,
-		docs.SubjectId
-		);
+		docs.SubjectId);
   }
 }

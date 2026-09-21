@@ -1,45 +1,39 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PRN212.AIStudyHub.Application.DTOs.Common;
 using PRN212.AIStudyHub.Application.DTOs.Subject;
 using PRN212.AIStudyHub.Application.Interfaces.Security;
 
-namespace PRN212.AIStudyHub.WebAPI.Controllers
-{
-  [Authorize]
-  [ApiController]
-  [Route("api/v1/subjects")]
-  public class SubjectController(ISubjectService subjectService, ILogger<SubjectController> logger) : ControllerBase
-  {
-	[HttpGet]
-	[ProducesResponseType(typeof(List<SubjectDto>), StatusCodes.Status200OK)]
-	public async Task<IActionResult> GetAllSubjects(CancellationToken cancellationToken)
-	{
-	  var result = await subjectService.GetAllSubjectsAsync(cancellationToken);
-	  return Ok(result);
-	}
+namespace PRN212.AIStudyHub.WebAPI.Controllers;
 
-	[HttpPost]
-	[ProducesResponseType(typeof(SubjectDto), StatusCodes.Status201Created)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<IActionResult> CreateSubject(
+[Authorize]
+[Route("api/v1/subjects")]
+public class SubjectController(ISubjectService subjectService) : BaseApiController
+{
+  /// <summary>
+  /// Lấy toàn bộ danh mục môn học trong hệ thống
+  /// </summary>
+  [HttpGet]
+  [ProducesResponseType(typeof(ApiResponse<List<SubjectDto>>), StatusCodes.Status200OK)]
+  public async Task<IActionResult> GetAllSubjects(CancellationToken cancellationToken)
+  {
+	var result = await subjectService.GetAllSubjectsAsync(cancellationToken);
+	return Ok(ApiResponse<List<SubjectDto>>.SuccessResponse(result, "Fetched all subjects successfully."));
+  }
+
+  /// <summary>
+  /// Tạo mới môn học
+  /// </summary>
+  [HttpPost]
+  [ProducesResponseType(typeof(ApiResponse<SubjectDto>), StatusCodes.Status201Created)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+  public async Task<IActionResult> CreateSubject(
 		[FromBody] CreateSubjectRequest request,
 		CancellationToken cancellationToken)
-	{
-	  try
-	  {
-		var result = await subjectService.CreateSubjectAsync(request, cancellationToken);
-		return StatusCode(StatusCodes.Status201Created, result);
-	  }
-	  catch (ArgumentException ex)
-	  {
-		return BadRequest(new { message = ex.Message });
-	  }
-	  catch (Exception ex)
-	  {
-		logger.LogError(ex, "An unexpected error while creating new subject: {SubjectName}", request.Name);
-		return StatusCode(StatusCodes.Status500InternalServerError,
-				new { message = "An unexpected error occurred", Detail = ex.Message });
-	  }
-	}
+  {
+	var result = await subjectService.CreateSubjectAsync(request, cancellationToken);
+	return StatusCode(StatusCodes.Status201Created,
+		ApiResponse<SubjectDto>.SuccessResponse(result, "Subject created successfully."));
   }
 }
