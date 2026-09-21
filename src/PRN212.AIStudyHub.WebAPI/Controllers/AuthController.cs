@@ -18,11 +18,11 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
-  public async Task<IActionResult> RegisterAsync(
+  public async Task<IActionResult> Register(
 		[FromBody] RegisterRequest request,
 		CancellationToken cancellationToken)
   {
-	var message = await authService.RegisterAsync(request, cancellationToken);
+	var message = await authService.Register(request, cancellationToken);
 	return Ok(ApiResponse.SuccessResponse(message));
   }
 
@@ -33,11 +33,11 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
-  public async Task<IActionResult> LoginAsync(
+  public async Task<IActionResult> Login(
 		[FromBody] LoginRequest request,
 		CancellationToken cancellationToken)
   {
-	var result = await authService.LoginAsync(request, cancellationToken);
+	var result = await authService.Login(request, cancellationToken);
 	return Ok(ApiResponse<AuthResponse>.SuccessResponse(result, "Login successfully."));
   }
 
@@ -47,11 +47,11 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [HttpPost("verify-otp")]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-  public async Task<IActionResult> VerifyOtpAsync(
+  public async Task<IActionResult> VerifyOtp(
 		[FromBody] VerifyOtpRequest request,
 		CancellationToken cancellationToken)
   {
-	var message = await authService.VerifyOtpAsync(request, cancellationToken);
+	var message = await authService.VerifyOtp(request, cancellationToken);
 	return Ok(ApiResponse.SuccessResponse(message));
   }
 
@@ -63,19 +63,21 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status202Accepted)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
-  public async Task<IActionResult> GoogleLoginAsync([FromBody] GoogleLoginRequest request)
+  public async Task<IActionResult> GoogleLogin(
+		[FromBody] GoogleLoginRequest request,
+		CancellationToken cancellationToken)
   {
-	var result = await authService.GoogleLoginAsync(request);
+	var result = await authService.GoogleLogin(request, cancellationToken);
 	if (result.IsNewUser)
 	{
 	  return StatusCode(StatusCodes.Status202Accepted,
 		  ApiResponse<object>.SuccessResponse(
-        new
-          {
-          isNewUser = true,
-          temporaryToken = result.TemporaryToken
-          }, 
-        result.Message ?? "Please choose your role to complete registration."));
+			  new
+			  {
+				isNewUser = true,
+				temporaryToken = result.TemporaryToken
+			  },
+			  result.Message ?? "Please choose your role to complete registration."));
 	}
 
 	return Ok(ApiResponse<AuthResponse>.SuccessResponse(result.AuthResponse, "Google login successfully."));
@@ -89,7 +91,8 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
   public async Task<IActionResult> CompleteGoogleRegistration(
-		[FromBody] CompleteGoogleRegistrationRequest request)
+		[FromBody] CompleteGoogleRegistrationRequest request,
+		CancellationToken cancellationToken)
   {
 	var authHeader = Request.Headers.Authorization.ToString();
 	if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -98,7 +101,7 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
 	}
 
 	var tempToken = authHeader["Bearer ".Length..].Trim();
-	var result = await authService.CompleteGoogleRegistrationAsync(request, tempToken);
+	var result = await authService.CompleteGoogleRegistration(request, tempToken, cancellationToken);
 
 	return Ok(ApiResponse<AuthResponse>.SuccessResponse(result, "Completed Google registration successfully."));
   }
@@ -134,9 +137,9 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> GetCurrentUserAsync(CancellationToken cancellationToken)
+  public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
   {
-	var result = await authService.GetCurrentUserAsync(CurrentUserId, cancellationToken);
+	var result = await authService.GetCurrentUser(CurrentUserId, cancellationToken);
 	return Ok(ApiResponse<UserDto>.SuccessResponse(result, "Fetched user profile successfully."));
   }
 
@@ -146,9 +149,11 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [HttpPost("forgot-password")]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+  public async Task<IActionResult> ForgotPassword(
+		[FromBody] ForgotPasswordRequestDto request,
+		CancellationToken cancellationToken)
   {
-	var message = await authService.ForgotPassword(request);
+	var message = await authService.ForgotPassword(request, cancellationToken);
 	return Ok(ApiResponse.SuccessResponse(message));
   }
 
@@ -159,9 +164,11 @@ public class AuthController(IAuthService authService, IMemoryCache memoryCache) 
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
+  public async Task<IActionResult> ResetPassword(
+		[FromBody] ResetPasswordDto request,
+		CancellationToken cancellationToken)
   {
-	var message = await authService.ResetPassword(request);
+	var message = await authService.ResetPassword(request, cancellationToken);
 	return Ok(ApiResponse.SuccessResponse(message));
   }
 }

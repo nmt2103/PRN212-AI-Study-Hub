@@ -7,7 +7,7 @@ namespace PRN212.AIStudyHub.Application.Interfaces.Security
 {
   public interface ISubjectService
   {
-	Task<List<SubjectDto>> GetAllSubjectsAsync(CancellationToken cancellationToken = default);
-	Task<SubjectDto> CreateSubjectAsync(CreateSubjectRequest request, CancellationToken cancellationToken = default);
+    Task<List<SubjectDto>> GetAllSubjects(CancellationToken cancellationToken = default);
+    Task<SubjectDto> CreateSubject(CreateSubjectRequest request, CancellationToken cancellationToken = default);
   }
 }

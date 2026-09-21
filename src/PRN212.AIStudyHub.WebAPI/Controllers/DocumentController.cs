@@ -25,35 +25,35 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status502BadGateway)]
-  public async Task<IActionResult> UploadAsync(
-		[FromForm] UploadDocumentRequest request,
-		CancellationToken cancellationToken)
+  public async Task<IActionResult> UploadDocument(
+    [FromForm] UploadDocumentRequest request,
+    CancellationToken cancellationToken)
   {
-	if (request.File == null || request.File.Length == 0)
-	  throw new BadRequestException("Uploaded file cannot be empty.");
+    if (request.File == null || request.File.Length == 0)
+      throw new BadRequestException("Uploaded file cannot be empty.");
 
-	if (request.File.Length > MaxFileSize)
-	  throw new BadRequestException("File size cannot exceed 25MB.");
+    if (request.File.Length > MaxFileSize)
+      throw new BadRequestException("File size cannot exceed 25MB.");
 
-	var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
-	if (string.IsNullOrEmpty(fileExtension) || !AllowedExtensions.Contains(fileExtension))
-	  throw new BadRequestException($"File extension '{fileExtension}' is not supported. Allowed extensions: {string.Join(", ", AllowedExtensions)}");
+    var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+    if (string.IsNullOrEmpty(fileExtension) || !AllowedExtensions.Contains(fileExtension))
+      throw new BadRequestException($"File extension '{fileExtension}' is not supported. Allowed extensions: {string.Join(", ", AllowedExtensions)}");
 
-	using var fileStream = request.File.OpenReadStream();
+    using var fileStream = request.File.OpenReadStream();
 
-	var command = new UploadDocumentCommand(
-		FileStream: fileStream,
-		FileName: request.File.FileName,
-		ContentType: request.File.ContentType,
-		FileSize: request.File.Length,
-		Title: request.Title,
-		SubjectId: request.SubjectId,
-		IsPublic: request.IsPublic);
+    var command = new UploadDocumentCommand(
+      FileStream: fileStream,
+      FileName: request.File.FileName,
+      ContentType: request.File.ContentType,
+      FileSize: request.File.Length,
+      Title: request.Title,
+      SubjectId: request.SubjectId,
+      IsPublic: request.IsPublic);
 
-	var result = await documentService.UploadDocumentAsync(command, CurrentUserId, cancellationToken);
+    var result = await documentService.UploadDocument(command, CurrentUserId, cancellationToken);
 
-	return StatusCode(StatusCodes.Status201Created,
-		ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Document uploaded successfully."));
+    return StatusCode(StatusCodes.Status201Created,
+      ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Document uploaded successfully."));
   }
 
   /// <summary>
@@ -64,11 +64,11 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
   [ProducesResponseType(typeof(ApiResponse<List<DocumentItemDto>>), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
   public async Task<IActionResult> GetMyDocuments(
-		[FromQuery] Guid? subjectId,
-		CancellationToken cancellationToken)
+    [FromQuery] Guid? subjectId,
+    CancellationToken cancellationToken)
   {
-	var result = await documentService.GetDocumentAsync(CurrentUserId, subjectId, cancellationToken);
-	return Ok(ApiResponse<List<DocumentItemDto>>.SuccessResponse(result, "Fetched documents successfully."));
+    var result = await documentService.GetMyDocuments(CurrentUserId, subjectId, cancellationToken);
+    return Ok(ApiResponse<List<DocumentItemDto>>.SuccessResponse(result, "Fetched documents successfully."));
   }
 
   /// <summary>
@@ -80,11 +80,11 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
   public async Task<IActionResult> GetDocumentById(
-		[FromRoute] Guid id,
-		CancellationToken cancellationToken)
+    [FromRoute] Guid id,
+    CancellationToken cancellationToken)
   {
-	var result = await documentService.GetDocumentDetailsAsync(id, CurrentUserId, cancellationToken);
-	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Fetched document details successfully."));
+    var result = await documentService.GetDocumentById(id, CurrentUserId, cancellationToken);
+    return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Fetched document details successfully."));
   }
 
   /// <summary>
@@ -97,12 +97,12 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
   public async Task<IActionResult> UpdateDocument(
-		[FromRoute] Guid id,
-		[FromBody] UpdateDocumentRequest request,
-		CancellationToken cancellationToken)
+    [FromRoute] Guid id,
+    [FromBody] UpdateDocumentRequest request,
+    CancellationToken cancellationToken)
   {
-	var result = await documentService.UpdateDocumentAsync(id, CurrentUserId, request, cancellationToken);
-	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Document updated successfully."));
+    var result = await documentService.UpdateDocument(id, CurrentUserId, request, cancellationToken);
+    return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Document updated successfully."));
   }
 
   /// <summary>
@@ -114,10 +114,10 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
   public async Task<IActionResult> DeleteDocument(
-		[FromRoute] Guid id,
-		CancellationToken cancellationToken)
+    [FromRoute] Guid id,
+    CancellationToken cancellationToken)
   {
-	await documentService.DeleteDocumentAsync(id, CurrentUserId, cancellationToken);
-	return Ok(ApiResponse.SuccessResponse("Document deleted successfully."));
+    await documentService.DeleteDocument(id, CurrentUserId, cancellationToken);
+    return Ok(ApiResponse.SuccessResponse("Document deleted successfully."));
   }
 }

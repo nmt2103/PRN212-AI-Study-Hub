@@ -20,7 +20,7 @@ public class AuthService(
 	IEmailService emailService,
 	IConfiguration config) : IAuthService
 {
-  public async Task<string> RegisterAsync(
+  public async Task<string> Register(
 		RegisterRequest request,
 		CancellationToken cancellationToken = default)
   {
@@ -74,12 +74,12 @@ public class AuthService(
 
 	var subject = "Xác nhận đăng ký tài khoản AI Study Hub";
 	var body = $"<h3>Chào {request.FirstName},</h3><p>Mã OTP xác nhận đăng ký tài khoản của bạn là: <strong>{otp}</strong></p><p>Mã này sẽ hết hạn sau 5 phút.</p>";
-	await emailService.SendEmailAsync(request.Email, subject, body);
+	await emailService.SendEmailAsync(request.Email, subject, body, cancellationToken);
 
 	return "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư rác).";
   }
 
-  public async Task<AuthResponse> LoginAsync(
+  public async Task<AuthResponse> Login(
 		LoginRequest request,
 		CancellationToken cancellationToken = default)
   {
@@ -110,7 +110,7 @@ public class AuthService(
 	return await GenerateAuthResponseAsync(user, cancellationToken);
   }
 
-  public async Task<string> VerifyOtpAsync(
+  public async Task<string> VerifyOtp(
 		VerifyOtpRequest request,
 		CancellationToken cancellationToken = default)
   {
@@ -155,7 +155,7 @@ public class AuthService(
 	return "Xác nhận OTP thành công! Tài khoản của bạn đã được tạo, vui lòng đăng nhập.";
   }
 
-  public async Task<UserDto> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken = default)
+  public async Task<UserDto> GetCurrentUser(Guid userId, CancellationToken cancellationToken = default)
   {
 	var user = await context.AppUsers
 		.AsNoTracking()
@@ -206,7 +206,9 @@ public class AuthService(
 	return new AuthResponse(accessToken, refreshToken, "Bearer", 3600, userDto);
   }
 
-  public async Task<GoogleLoginResult> GoogleLoginAsync(GoogleLoginRequest req)
+  public async Task<GoogleLoginResult> GoogleLogin(
+		GoogleLoginRequest req,
+		CancellationToken cancellationToken = default)
   {
 	var accessToken = req.GetTokenChecked();
 
@@ -223,12 +225,12 @@ public class AuthService(
 	if (accessToken.StartsWith("ya29"))
 	{
 	  using var httpClient = new HttpClient();
-	  var response = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/userinfo?access_token={accessToken}");
+	  var response = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/userinfo?access_token={accessToken}", cancellationToken);
 	  if (!response.IsSuccessStatusCode)
 	  {
 		throw new UnauthorizedException("Invalid Google Access Token.");
 	  }
-	  var jsonResponse = await response.Content.ReadAsStringAsync();
+	  var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
 	  using var docs = System.Text.Json.JsonDocument.Parse(jsonResponse);
 	  var root = docs.RootElement;
 
@@ -259,14 +261,14 @@ public class AuthService(
 	  }
 	}
 
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == userEmail);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == userEmail, cancellationToken);
 
 	if (userInDb != null)
 	{
 	  return new GoogleLoginResult
 	  {
 		IsNewUser = false,
-		AuthResponse = await GenerateAuthResponseAsync(userInDb, default)
+		AuthResponse = await GenerateAuthResponseAsync(userInDb, cancellationToken)
 	  };
 	}
 
@@ -279,9 +281,10 @@ public class AuthService(
 	};
   }
 
-  public async Task<AuthResponse> CompleteGoogleRegistrationAsync(
+  public async Task<AuthResponse> CompleteGoogleRegistration(
 		CompleteGoogleRegistrationRequest request,
-		string tempToken)
+		string tempToken,
+		CancellationToken cancellationToken = default)
   {
 	var principal = jwtTokenGenerator.ValidateTemporaryToken(tempToken);
 	if (principal == null)
@@ -303,10 +306,10 @@ public class AuthService(
 	  throw new BadRequestException("Invalid role. Role must be 'Student' or 'Lecturer'.");
 	}
 
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == email);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 	if (userInDb != null)
 	{
-	  return await GenerateAuthResponseAsync(userInDb, default);
+	  return await GenerateAuthResponseAsync(userInDb, cancellationToken);
 	}
 
 	string hashedDummyPassword = passwordHasher.HashPassword(Guid.NewGuid().ToString());
@@ -322,14 +325,16 @@ public class AuthService(
 	};
 
 	context.AppUsers.Add(newUser);
-	await context.SaveChangesAsync(default);
+	await context.SaveChangesAsync(cancellationToken);
 
-	return await GenerateAuthResponseAsync(newUser, default);
+	return await GenerateAuthResponseAsync(newUser, cancellationToken);
   }
 
-  public async Task<string> ForgotPassword(ForgotPasswordRequestDto request)
+  public async Task<string> ForgotPassword(
+		ForgotPasswordRequestDto request,
+		CancellationToken cancellationToken = default)
   {
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email, cancellationToken);
 	if (userInDb == null)
 	{
 	  throw new NotFoundException("Account with this email does not exist.");
@@ -356,7 +361,7 @@ public class AuthService(
                             <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;' />
                             <p style='font-size: 12px; color: #666; text-align: center;'>This is an automated message, please do not reply directly to this email.</p>
                         </div>";
-		await emailService.SendEmailAsync(userInDb.Email, subject, body);
+		await emailService.SendEmailAsync(userInDb.Email, subject, body, cancellationToken);
 	  }
 	  catch (Exception ex)
 	  {
@@ -366,7 +371,9 @@ public class AuthService(
 	return "Vui lòng nhập mã OTP (đã gửi qua mail) để thay đổi mật khẩu";
   }
 
-  public async Task<string> ResetPassword(ResetPasswordDto request)
+  public async Task<string> ResetPassword(
+		ResetPasswordDto request,
+		CancellationToken cancellationToken = default)
   {
 	if (!cache.TryGetValue($"OTP_{request.email}", out string? savedOtp))
 	{
@@ -378,14 +385,14 @@ public class AuthService(
 	  throw new BadRequestException("Invalid OTP code.");
 	}
 
-	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email);
+	var userInDb = await context.AppUsers.FirstOrDefaultAsync(u => u.Email == request.email, cancellationToken);
 	if (userInDb == null)
 	{
 	  throw new NotFoundException("Account does not exist.");
 	}
 
 	userInDb.PasswordHash = passwordHasher.HashPassword(request.newPassword);
-	await context.SaveChangesAsync();
+	await context.SaveChangesAsync(cancellationToken);
 	cache.Remove($"OTP_{request.email}");
 	return "Mật khẩu đã được cập nhật thành công";
   }
