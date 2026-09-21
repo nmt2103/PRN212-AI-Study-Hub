@@ -120,4 +120,36 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
 	await documentService.DeleteDocument(id, CurrentUserId, cancellationToken);
 	return Ok(ApiResponse.SuccessResponse("Document deleted successfully."));
   }
+
+  /// <summary>
+  /// Chuyển đổi môn học cho tài liệu (dành cho Chủ sở hữu hoặc Quản trị viên)
+  /// </summary>
+  [HttpPatch("{id:guid}/subject")]
+  [ProducesResponseType(typeof(ApiResponse<DocumentResponseDto>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> UpdateDocumentSubject(
+	[FromRoute] Guid id,
+	[FromBody] UpdateDocumentSubjectRequest request,
+	CancellationToken cancellationToken)
+  {
+	if (request is null || request.SubjectId == Guid.Empty)
+	{
+	  throw new BadRequestException("SubjectId must not be empty.");
+	}
+
+	var isAdmin = User.IsInRole("Admin");
+	var result = await documentService.UpdateDocumentSubject(
+	  id,
+	  CurrentUserId,
+	  isAdmin,
+	  request,
+	  cancellationToken);
+
+	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(
+	  result,
+	  "Document subject updated successfully."));
+  }
 }
