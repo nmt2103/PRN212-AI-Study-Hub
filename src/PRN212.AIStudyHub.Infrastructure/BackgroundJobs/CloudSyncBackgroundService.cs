@@ -66,7 +66,7 @@ namespace PRN212.AIStudyHub.Infrastructure.BackgroundJobs
 					using var fileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read);
 
 					// Push to Cloudinary
-					var uploadResult = await cloudStorageService.UploadRawFileAsync(fileStream, doc.FileName, cancellationToken);
+					var uploadResult = await cloudStorageService.UploadRawFile(fileStream, doc.FileName, cancellationToken);
 
 					fileStream.Close();
 					doc.IsCloudStored = true;
