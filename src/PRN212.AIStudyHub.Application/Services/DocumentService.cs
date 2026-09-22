@@ -283,4 +283,82 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 
 	return PagedResult<DocumentResponseDto>.Create(items, totalCount, pageNumber, pageSize);
   }
+
+  public async Task<PagedResult<DocumentResponseDto>> GetDocuments(
+	  DocumentFilterQuery query,
+	  Guid currentUserId,
+	  CancellationToken cancellationToken = default)
+  {
+	int pageNumber = Math.Max(1, query.PageNumber);
+	int pageSize = Math.Clamp(query.PageSize, 1, 100);
+
+	var dbQuery = context.Documents.AsNoTracking()
+		.Where(doc => !doc.IsDeleted && (doc.UserId == currentUserId || doc.IsPublic));
+
+	if (!string.IsNullOrWhiteSpace(query.Keyword))
+	{
+	  string trimmedKeyword = query.Keyword.Trim();
+	  dbQuery = dbQuery.Where(doc => doc.Title.Contains(trimmedKeyword));
+	}
+
+	if (query.SubjectId.HasValue)
+	  dbQuery = dbQuery.Where(doc => doc.SubjectId == query.SubjectId.Value);
+
+	if (!string.IsNullOrWhiteSpace(query.FileExtension))
+	{
+	  var extension = query.FileExtension.Trim().ToLowerInvariant();
+
+	  if (!extension.StartsWith('.'))
+		extension = '.' + extension;
+
+	  dbQuery = dbQuery.Where(doc => doc.FileExtension.ToLower() == extension);
+	}
+
+	if (query.UserId.HasValue)
+	{
+	  if (query.UserId == currentUserId)
+		dbQuery = dbQuery.Where(doc => doc.UserId == currentUserId);
+	  else
+		dbQuery = dbQuery.Where(doc => doc.UserId == query.UserId.Value && doc.IsPublic);
+	}
+
+	if (query.IsPublic.HasValue)
+	{
+	  if (query.IsPublic.Value)
+		dbQuery = dbQuery.Where(doc => doc.IsPublic);
+	  else
+		dbQuery = dbQuery.Where(doc => !doc.IsPublic && doc.UserId == currentUserId);
+	}
+
+	dbQuery = query.SortBy?.ToLowerInvariant() switch
+	{
+	  "uploadedat_asc" => dbQuery.OrderBy(d => d.UploadedAt),
+	  "title_asc" => dbQuery.OrderBy(d => d.Title),
+	  "title_desc" => dbQuery.OrderByDescending(d => d.Title),
+	  "filesize_asc" => dbQuery.OrderBy(d => d.FileSize),
+	  "filesize_desc" => dbQuery.OrderByDescending(d => d.FileSize),
+	  _ => dbQuery.OrderByDescending(d => d.UploadedAt)
+	};
+
+	int totalCount = await dbQuery.CountAsync(cancellationToken);
+
+	var items = await dbQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize)
+	.Select(doc => new DocumentResponseDto(
+		doc.Id,
+		doc.Title,
+		doc.FileName,
+		doc.StoragePath,
+		doc.CloudPublicId,
+		doc.IsCloudStored,
+		doc.FileSize,
+		doc.FileExtension,
+		doc.ContentType,
+		doc.UploadedAt,
+		doc.IsPublic,
+		doc.SubjectId
+	))
+	.ToListAsync(cancellationToken);
+
+	return PagedResult<DocumentResponseDto>.Create(items, totalCount, pageNumber, pageSize);
+  }
 }

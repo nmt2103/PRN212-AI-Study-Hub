@@ -44,4 +44,9 @@ public interface IDocumentService
 	int pageNumber,
 	int pageSize,
 	CancellationToken cancellationToken = default);
+
+  Task<PagedResult<DocumentResponseDto>> GetDocuments(
+	  DocumentFilterQuery query,
+	  Guid currentUserId,
+	  CancellationToken cancellationToken = default);
 }

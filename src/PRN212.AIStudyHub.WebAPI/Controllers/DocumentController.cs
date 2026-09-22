@@ -59,8 +59,7 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
   /// <summary>
   /// Lấy danh sách tài liệu cá nhân (hỗ trợ lọc theo môn học)
   /// </summary>
-  [HttpGet]
-  [HttpGet("get")] // Hỗ trợ tương thích ngược
+  [HttpGet("me")] // Hỗ trợ tương thích ngược
   [ProducesResponseType(typeof(ApiResponse<List<DocumentItemDto>>), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
   public async Task<IActionResult> GetMyDocuments(
@@ -84,7 +83,9 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
 	CancellationToken cancellationToken)
   {
 	var result = await documentService.GetDocumentById(id, CurrentUserId, cancellationToken);
-	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(result, "Fetched document details successfully."));
+	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(
+	result,
+	"Fetched document details successfully."));
   }
 
   /// <summary>
@@ -151,5 +152,29 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
 	return Ok(ApiResponse<DocumentResponseDto>.SuccessResponse(
 	  result,
 	  "Document subject updated successfully."));
+  }
+
+  /// <summary>
+  /// Tìm kiếm tài liệu theo từ khóa và lọc đa tiêu chí có phân trang
+  /// </summary>
+  [HttpGet]
+  [ProducesResponseType(typeof(ApiResponse<PagedResult<DocumentResponseDto>>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  public async Task<IActionResult> GetDocuments(
+	[FromQuery] DocumentFilterQuery query,
+	CancellationToken cancellationToken)
+  {
+	if (query.PageNumber < 1)
+	  throw new BadRequestException("Page number must be greater than or equal to 1.");
+
+	if (query.PageSize < 1 || query.PageSize > 100)
+	  throw new BadRequestException("Page size must be between 1 and 100.");
+
+	var result = await documentService.GetDocuments(query, CurrentUserId, cancellationToken);
+
+	return Ok(ApiResponse<PagedResult<DocumentResponseDto>>.SuccessResponse(
+	  result,
+	  "Documents retrieved successfully."));
   }
 }
