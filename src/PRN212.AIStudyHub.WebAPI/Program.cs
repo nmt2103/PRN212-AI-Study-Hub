@@ -7,7 +7,7 @@ using Microsoft.OpenApi;
 using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Application.Interfaces.Security;
 using PRN212.AIStudyHub.Application.Services;
-using PRN212.AIStudyHub.Application.Services.Cloud;
+using PRN212.AIStudyHub.Application.Interfaces.Cloud;
 using PRN212.AIStudyHub.Infrastructure.Cloud;
 using PRN212.AIStudyHub.Infrastructure.Data;
 using PRN212.AIStudyHub.Infrastructure.Security;
@@ -87,6 +87,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 // =========================================================================
 // SWAGGER / OPENAPI INCLUDE BEARER TOKEN CONFIGURATION

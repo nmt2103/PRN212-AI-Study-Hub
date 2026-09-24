@@ -177,4 +177,22 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
 	  result,
 	  "Documents retrieved successfully."));
   }
+
+  /// <summary>
+  /// Tải xuống tài liệu
+  /// </summary>
+  [HttpGet("{id:guid}/download")]
+  [ProducesResponseType(StatusCodes.Status200OK)]
+  [Produces("application/octet-stream")]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> DownloadDocument(
+	[FromRoute] Guid id,
+	CancellationToken cancellationToken)
+  {
+	var result = await documentService.DownloadDocument(id, CurrentUserId, cancellationToken);
+
+	return File(result.ContentStream, result.ContentType, result.FileName);
+  }
 }

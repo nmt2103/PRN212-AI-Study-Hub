@@ -49,4 +49,9 @@ public interface IDocumentService
 	  DocumentFilterQuery query,
 	  Guid currentUserId,
 	  CancellationToken cancellationToken = default);
+
+  Task<DocumentDownloadDto> DownloadDocument(
+	  Guid id,
+	  Guid currentUserId,
+	  CancellationToken cancellationToken = default);
 }

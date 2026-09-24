@@ -3,7 +3,7 @@ using PRN212.AIStudyHub.Application.DTOs.Common;
 using PRN212.AIStudyHub.Application.DTOs.Document;
 using PRN212.AIStudyHub.Application.Exceptions;
 using PRN212.AIStudyHub.Application.Interfaces;
-using PRN212.AIStudyHub.Application.Services.Cloud;
+using PRN212.AIStudyHub.Application.Interfaces.Cloud;
 using PRN212.AIStudyHub.Domain.Entities;
 
 namespace PRN212.AIStudyHub.Application.Services;
@@ -360,5 +360,32 @@ public class DocumentService(IAppDbContext context, ICloudStorageService cloudSt
 	.ToListAsync(cancellationToken);
 
 	return PagedResult<DocumentResponseDto>.Create(items, totalCount, pageNumber, pageSize);
+  }
+
+  public async Task<DocumentDownloadDto> DownloadDocument(
+	  Guid id,
+	  Guid currentUserId,
+	  CancellationToken cancellationToken)
+  {
+	var document = await context.Documents.AsNoTracking()
+		.FirstOrDefaultAsync(doc => doc.Id == id && !doc.IsDeleted, cancellationToken);
+
+	if (document is null)
+	  throw new NotFoundException($"Document with ID {id} was not found.");
+
+	if (document.UserId != currentUserId && !document.IsPublic)
+	  throw new ForbiddenException("You do not have permission to access this private document.");
+
+	if (string.IsNullOrWhiteSpace(document.StoragePath))
+	  throw new CloudStorageException("Document storage path is missing");
+
+	var downloadStream = await cloudStorageService.DownloadFileStream(
+		document.StoragePath,
+		cancellationToken);
+
+	return new DocumentDownloadDto(
+		downloadStream,
+		document.ContentType,
+		document.FileName);
   }
 }
