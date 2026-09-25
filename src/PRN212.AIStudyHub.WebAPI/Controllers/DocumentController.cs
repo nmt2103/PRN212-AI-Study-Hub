@@ -207,4 +207,28 @@ namespace PRN212.AIStudyHub.WebAPI.Controllers
       return File(result.ContentStream, result.ContentType, result.FileName);
     }
   }
+
+  /// <summary>
+  /// Lấy đường dẫn xem trước (preview) của tài liệu
+  /// </summary>
+  [HttpGet("{id}/preview")]
+  [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+  [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> GetDocumentPreviewAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+  {
+	// Gọi service lấy chi tiết file (đã có sẵn check phân quyền)
+	var document = await documentService.GetDocumentById(id, CurrentUserId, cancellationToken);
+
+	if (string.IsNullOrEmpty(document.StoragePath))
+	{
+	  throw new BadRequestException("Tài liệu này không có đường dẫn hợp lệ.");
+	}
+
+	return Ok(ApiResponse<object>.SuccessResponse(
+	  new { PreviewUrl = document.StoragePath },
+	  "Lấy link xem trước thành công."));
+  }
 }
