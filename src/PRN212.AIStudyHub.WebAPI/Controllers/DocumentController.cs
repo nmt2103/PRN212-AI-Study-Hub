@@ -192,9 +192,9 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
 	// Gọi service lấy chi tiết file (đã có sẵn check phân quyền)
 	var document = await documentService.GetDocumentById(id, CurrentUserId, cancellationToken);
 
-	if (!document.IsCloudStored || string.IsNullOrEmpty(document.StoragePath))
+	if (string.IsNullOrEmpty(document.StoragePath))
 	{
-	  throw new BadRequestException("Tài liệu này chưa được đồng bộ lên Cloud. Vui lòng thử lại sau.");
+	  throw new BadRequestException("Tài liệu này không có đường dẫn hợp lệ.");
 	}
 
 	return Ok(ApiResponse<object>.SuccessResponse(

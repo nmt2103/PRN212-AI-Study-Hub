@@ -8,7 +8,6 @@ using PRN212.AIStudyHub.Application.Interfaces;
 using PRN212.AIStudyHub.Application.Interfaces.Security;
 using PRN212.AIStudyHub.Application.Services;
 using PRN212.AIStudyHub.Application.Services.Cloud;
-using PRN212.AIStudyHub.Infrastructure.BackgroundJobs;
 using PRN212.AIStudyHub.Infrastructure.Cloud;
 using PRN212.AIStudyHub.Infrastructure.Data;
 using PRN212.AIStudyHub.Infrastructure.Security;
@@ -30,7 +29,6 @@ builder.Services.Configure<JwtSettings>(
 builder.Services.Configure<CloudinarySettings>(
   builder.Configuration.GetSection(CloudinarySettings.SectionName));
 
-builder.Services.AddHostedService<CloudSyncBackgroundService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService>();
